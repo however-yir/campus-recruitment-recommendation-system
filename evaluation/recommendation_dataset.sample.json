@@ -1,0 +1,12 @@
+[
+  {
+    "user_id": "u1",
+    "predicted": ["job-2", "job-3", "job-4"],
+    "ground_truth": ["job-2", "job-5"]
+  },
+  {
+    "user_id": "u2",
+    "predicted": ["job-8", "job-6", "job-1"],
+    "ground_truth": ["job-6", "job-9"]
+  }
+]

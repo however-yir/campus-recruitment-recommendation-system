@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: campus-recruitment-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-123456}
+      MYSQL_DATABASE: hire
+    ports:
+      - "3310:3306"
+    volumes:
+      - campus_recruitment_mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: campus-recruitment-redis
+    ports:
+      - "6381:6379"
+
+volumes:
+  campus_recruitment_mysql_data:

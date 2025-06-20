@@ -2,17 +2,17 @@
 server:
     tomcat:
         uri-encoding: UTF-8
-    port: 8080
+    port: ${SERVER_PORT:8080}
     servlet:
-        context-path: /hire
+        context-path: ${CONTEXT_PATH:/hire}
 
 
 spring:
     datasource:
-        driverClassName: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://127.0.0.1:3306/hire?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&useSSL=false
-        username: root
-        password: 123456
+        driverClassName: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+        url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/hire?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&useSSL=false}
+        username: ${DB_USERNAME:root}
+        password: ${DB_PASSWORD:123456}
 
 #        driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
 #        url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=hire

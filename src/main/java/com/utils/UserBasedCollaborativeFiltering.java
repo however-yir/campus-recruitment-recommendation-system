@@ -124,6 +124,61 @@ public class UserBasedCollaborativeFiltering {
         result.addAll(sortedRecommendations.keySet());
         return result;
     }
+
+    public RecommendationResult recommendItemsWithHotFallback(
+            String targetUser,
+            int neighborCount,
+            int numRecommendations,
+            List<String> hotItems
+    ) {
+        if (numRecommendations <= 0) {
+            return new RecommendationResult(Collections.emptyList(), Collections.emptyMap());
+        }
+
+        List<String> cfItems = recommendItems(targetUser, neighborCount, numRecommendations);
+        LinkedHashSet<String> merged = new LinkedHashSet<>(cfItems);
+        if (hotItems != null) {
+            for (String hotItem : hotItems) {
+                if (merged.size() >= numRecommendations) {
+                    break;
+                }
+                merged.add(hotItem);
+            }
+        }
+
+        List<String> finalItems = new ArrayList<>(merged);
+        if (finalItems.size() > numRecommendations) {
+            finalItems = finalItems.subList(0, numRecommendations);
+        }
+
+        Map<String, String> explanations = new LinkedHashMap<>();
+        for (String item : finalItems) {
+            if (cfItems.contains(item)) {
+                explanations.put(item, "由相似用户行为推荐");
+            } else {
+                explanations.put(item, "热门岗位兜底推荐");
+            }
+        }
+        return new RecommendationResult(finalItems, explanations);
+    }
+
+    public static class RecommendationResult {
+        private final List<String> items;
+        private final Map<String, String> explanations;
+
+        public RecommendationResult(List<String> items, Map<String, String> explanations) {
+            this.items = items;
+            this.explanations = explanations;
+        }
+
+        public List<String> getItems() {
+            return items;
+        }
+
+        public Map<String, String> getExplanations() {
+            return explanations;
+        }
+    }
     
     
 }

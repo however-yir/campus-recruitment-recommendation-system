@@ -1,0 +1,14 @@
+# Build outputs
+/target/
+
+# Frontend build artifacts under Spring resources
+/src/main/resources/**/dist/**/*.map
+
+# Dependencies
+/src/main/resources/**/node_modules/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store

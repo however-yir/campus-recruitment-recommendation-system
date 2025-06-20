@@ -8,6 +8,11 @@
   面向高校求职场景的校园招聘推荐系统（学生端 / 企业端 / 管理端）
 </p>
 
+## 项目主周期（Main Timeline）
+
+- `main 日期`：`2025.01 - 2025.06`
+- `推进次数`：约 `30` 次（长周期迭代）
+
 <p align="center">
   <img src="https://img.shields.io/badge/Java-8-blue" alt="Java 8" />
   <img src="https://img.shields.io/badge/Spring%20Boot-2.2.2-brightgreen" alt="Spring Boot" />

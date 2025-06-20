@@ -1,0 +1,15 @@
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.mp3 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+
+# Generated bundles / maps should not dominate diffs
+src/main/resources/**/dist/** linguist-generated=true
+src/main/resources/static/upload/** linguist-generated=true
+*.map linguist-generated=true

@@ -2,7 +2,11 @@
 /target/
 
 # Frontend build artifacts under Spring resources
+/src/main/resources/**/dist/
 /src/main/resources/**/dist/**/*.map
+
+# Runtime uploaded files
+/src/main/resources/static/upload/
 
 # Dependencies
 /src/main/resources/**/node_modules/

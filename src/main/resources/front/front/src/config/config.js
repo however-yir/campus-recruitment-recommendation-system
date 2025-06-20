@@ -11,6 +11,10 @@ export default {
 			url: '/index/zhaopinxinxi',
 		},
 		{
+			name: 'AI求职问答',
+			url: '/index/aiCareerChat',
+		},
+		{
 			name: '交流论坛',
 			url: '/index/forum'
 		}, 

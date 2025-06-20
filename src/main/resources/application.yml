@@ -51,3 +51,14 @@ mybatis-plus:
     call-setters-on-nulls: true
     #springboot 项目mybatis plus 设置 jdbcTypeForNull (oracle数据库需配置JdbcType.NULL, 默认是Other)
     jdbc-type-for-null: 'null' 
+
+ai:
+  assistant:
+    enabled: ${AI_ASSISTANT_ENABLED:false}
+    api-url: ${AI_ASSISTANT_API_URL:https://api.openai.com/v1/chat/completions}
+    api-key: ${AI_ASSISTANT_API_KEY:}
+    auth-header: ${AI_ASSISTANT_AUTH_HEADER:Authorization}
+    auth-scheme: ${AI_ASSISTANT_AUTH_SCHEME:Bearer}
+    model: ${AI_ASSISTANT_MODEL:gpt-4o-mini}
+    timeout-ms: ${AI_ASSISTANT_TIMEOUT_MS:30000}
+    system-prompt: ${AI_ASSISTANT_SYSTEM_PROMPT:你是一名校园招聘求职助手，请结合求职场景提供准确、可执行、结构化的建议。}

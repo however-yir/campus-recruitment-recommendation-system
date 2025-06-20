@@ -14,6 +14,7 @@ import Storeup from '../pages/storeup/list'
 import News from '../pages/news/news-list'
 import NewsDetail from '../pages/news/news-detail'
 import payList from '../pages/pay'
+import aiCareerChat from '../pages/aiCareerChat'
 
 import yonghuList from '../pages/yonghu/list'
 import yonghuDetail from '../pages/yonghu/detail'
@@ -86,6 +87,10 @@ export default new VueRouter({
 				{
 					path: 'messages',
 					component: Messages
+				},
+				{
+					path: 'aiCareerChat',
+					component: aiCareerChat
 				},
 				{
 					path: 'forum',

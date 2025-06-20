@@ -46,8 +46,8 @@ import java.io.IOException;
 /**
  * 企业信息
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2025-02-07 12:22:17
  */
 @RestController
@@ -61,10 +61,10 @@ public class QiyexinxiController {
 
 
 
-    
+
 	@Autowired
 	private TokenService tokenService;
-	
+
 	/**
 	 * 登录
 	 */
@@ -75,32 +75,31 @@ public class QiyexinxiController {
 		if(u==null || !u.getMima().equals(password)) {
 			return R.error("账号或密码不正确");
 		}
-		
+
         if(!"是".equals(u.getSfsh())) return R.error("账号已锁定，请联系管理员审核。");
 		String token = tokenService.generateToken(u.getId(), username,"qiyexinxi",  "企业信息" );
 		return R.ok().put("token", token);
 	}
 
 
-	
+
 	/**
      * 注册
      */
-	@IgnoreAuth
-    @RequestMapping("/register")
+		@IgnoreAuth
+	    @RequestMapping("/register")
     public R register(@RequestBody QiyexinxiEntity qiyexinxi){
-    	//ValidatorUtils.validateEntity(qiyexinxi);
-    	QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
-		if(u!=null) {
-			return R.error("注册用户已存在");
-		}
-		Long uId = new Date().getTime();
-		qiyexinxi.setId(uId);
-        qiyexinxiService.insert(qiyexinxi);
-        return R.ok();
+		//ValidatorUtils.validateEntity(qiyexinxi);
+		QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
+			if(u!=null) {
+				return R.error("注册用户已存在");
+			}
+			qiyexinxi.setId(null);
+	        qiyexinxiService.insert(qiyexinxi);
+	        return R.ok();
     }
 
-	
+
 	/**
 	 * 退出
 	 */
@@ -109,28 +108,30 @@ public class QiyexinxiController {
 		request.getSession().invalidate();
 		return R.ok("退出成功");
 	}
-	
+
 	/**
      * 获取用户的session用户信息
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request){
-    	Long id = (Long)request.getSession().getAttribute("userId");
+	Long id = (Long)request.getSession().getAttribute("userId");
         QiyexinxiEntity u = qiyexinxiService.selectById(id);
         return R.ok().put("data", u);
     }
-    
+
     /**
      * 密码重置
      */
-    @IgnoreAuth
-	@RequestMapping(value = "/resetPass")
+		@RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request){
-    	QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", username));
-    	if(u==null) {
-    		return R.error("账号不存在");
-    	}
-        u.setMima("123456");
+		if(!isAdmin(request)) {
+			return R.error(403, "仅管理员可重置密码");
+		}
+		QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", username));
+		if(u==null) {
+			return R.error("账号不存在");
+		}
+	        u.setMima("123456");
         qiyexinxiService.updateById(u);
         return R.ok("密码已重置为：123456");
     }
@@ -156,18 +157,18 @@ public class QiyexinxiController {
 				DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
     }
-    
+
     /**
      * 前台列表
      */
 	@IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,QiyexinxiEntity qiyexinxi, 
+    public R list(@RequestParam Map<String, Object> params,QiyexinxiEntity qiyexinxi,
 		HttpServletRequest request){
         EntityWrapper<QiyexinxiEntity> ew = new EntityWrapper<QiyexinxiEntity>();
 
 		PageUtils page = qiyexinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, qiyexinxi), params), params));
-		
+
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
@@ -180,8 +181,8 @@ public class QiyexinxiController {
      */
     @RequestMapping("/lists")
     public R list( QiyexinxiEntity qiyexinxi){
-       	EntityWrapper<QiyexinxiEntity> ew = new EntityWrapper<QiyexinxiEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( qiyexinxi, "qiyexinxi")); 
+	EntityWrapper<QiyexinxiEntity> ew = new EntityWrapper<QiyexinxiEntity>();
+	ew.allEq(MPUtil.allEQMapPre( qiyexinxi, "qiyexinxi"));
         return R.ok().put("data", qiyexinxiService.selectListView(ew));
     }
 
@@ -191,11 +192,11 @@ public class QiyexinxiController {
     @RequestMapping("/query")
     public R query(QiyexinxiEntity qiyexinxi){
         EntityWrapper< QiyexinxiEntity> ew = new EntityWrapper< QiyexinxiEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( qiyexinxi, "qiyexinxi")); 
+		ew.allEq(MPUtil.allEQMapPre( qiyexinxi, "qiyexinxi"));
 		QiyexinxiView qiyexinxiView =  qiyexinxiService.selectView(ew);
 		return R.ok("查询企业信息成功").put("data", qiyexinxiView);
     }
-	
+
     /**
      * 后台详情
      */
@@ -218,7 +219,7 @@ public class QiyexinxiController {
 				DeSensUtil.desensitize(qiyexinxi,deSens);
         return R.ok().put("data", qiyexinxi);
     }
-    
+
 
 
 
@@ -230,17 +231,16 @@ public class QiyexinxiController {
         if(qiyexinxiService.selectCount(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()))>0) {
             return R.error("企业账号已存在");
         }
-    	qiyexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(qiyexinxi);
-    	QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
+	    qiyexinxi.setId(null);
+	    //ValidatorUtils.validateEntity(qiyexinxi);
+	    QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
 		if(u!=null) {
 			return R.error("用户已存在");
 		}
-		qiyexinxi.setId(new Date().getTime());
         qiyexinxiService.insert(qiyexinxi);
         return R.ok().put("data",qiyexinxi.getId());
     }
-    
+
     /**
      * 前台保存
      */
@@ -249,13 +249,12 @@ public class QiyexinxiController {
         if(qiyexinxiService.selectCount(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()))>0) {
             return R.error("企业账号已存在");
         }
-    	qiyexinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(qiyexinxi);
-    	QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
+	    qiyexinxi.setId(null);
+	    //ValidatorUtils.validateEntity(qiyexinxi);
+	    QiyexinxiEntity u = qiyexinxiService.selectOne(new EntityWrapper<QiyexinxiEntity>().eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()));
 		if(u!=null) {
 			return R.error("用户已存在");
 		}
-		qiyexinxi.setId(new Date().getTime());
         qiyexinxiService.insert(qiyexinxi);
         return R.ok().put("data",qiyexinxi.getId());
     }
@@ -271,18 +270,48 @@ public class QiyexinxiController {
     @Transactional
     public R update(@RequestBody QiyexinxiEntity qiyexinxi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qiyexinxi);
-        if(qiyexinxiService.selectCount(new EntityWrapper<QiyexinxiEntity>().ne("id", qiyexinxi.getId()).eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()))>0) {
+        if(qiyexinxi.getId() == null) {
+            return R.error("企业ID不能为空");
+        }
+        QiyexinxiEntity existing = qiyexinxiService.selectById(qiyexinxi.getId());
+        if(existing == null) {
+            return R.error("企业不存在");
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getQiyezhanghao())
+                && qiyexinxiService.selectCount(new EntityWrapper<QiyexinxiEntity>().ne("id", qiyexinxi.getId()).eq("qiyezhanghao", qiyexinxi.getQiyezhanghao()))>0) {
             return R.error("企业账号已存在");
         }
-        //全部更新
-        qiyexinxiService.updateById(qiyexinxi);
-    if(null!=qiyexinxi.getQiyezhanghao())
-    {
-        // 修改token
-        TokenEntity tokenEntity = new TokenEntity();
-        tokenEntity.setUsername(qiyexinxi.getQiyezhanghao());
-        tokenService.update(tokenEntity, new EntityWrapper<TokenEntity>().eq("userid", qiyexinxi.getId()));
-    }
+        String oldUsername = existing.getQiyezhanghao();
+        if(StringUtils.isNotBlank(qiyexinxi.getQiyezhanghao())) {
+            existing.setQiyezhanghao(qiyexinxi.getQiyezhanghao());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getQiyemingcheng())) {
+            existing.setQiyemingcheng(qiyexinxi.getQiyemingcheng());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getMima())) {
+            existing.setMima(qiyexinxi.getMima());
+        }
+        if(qiyexinxi.getFengmian() != null) {
+            existing.setFengmian(qiyexinxi.getFengmian());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getFarendaibiao())) {
+            existing.setFarendaibiao(qiyexinxi.getFarendaibiao());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getLianxifangshi())) {
+            existing.setLianxifangshi(qiyexinxi.getLianxifangshi());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getQiyedizhi())) {
+            existing.setQiyedizhi(qiyexinxi.getQiyedizhi());
+        }
+        if(StringUtils.isNotBlank(qiyexinxi.getQiyejianjie())) {
+            existing.setQiyejianjie(qiyexinxi.getQiyejianjie());
+        }
+        qiyexinxiService.updateById(existing);
+        if(StringUtils.isNotBlank(existing.getQiyezhanghao()) && !existing.getQiyezhanghao().equals(oldUsername)) {
+            TokenEntity tokenEntity = new TokenEntity();
+            tokenEntity.setUsername(existing.getQiyezhanghao());
+            tokenService.update(tokenEntity, new EntityWrapper<TokenEntity>().eq("userid", existing.getId()));
+        }
 
 
         return R.ok();
@@ -306,7 +335,7 @@ public class QiyexinxiController {
     }
 
 
-    
+
 
     /**
      * 删除
@@ -316,8 +345,13 @@ public class QiyexinxiController {
         qiyexinxiService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
-	
+
+    private boolean isAdmin(HttpServletRequest request) {
+        Object role = request.getSession().getAttribute("role");
+        return role != null && "管理员".equals(role.toString());
+    }
+
+
 
 
 

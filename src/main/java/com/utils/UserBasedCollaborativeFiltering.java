@@ -67,12 +67,22 @@ public class UserBasedCollaborativeFiltering {
     }
 
     public List<String> recommendItems(String targetUser, int numRecommendations) {
+        int neighborCount = Math.max(numRecommendations, 1);
+        return recommendItems(targetUser, neighborCount, numRecommendations);
+    }
+
+    public List<String> recommendItems(String targetUser, int neighborCount, int numRecommendations) {
+        if (!userRatings.containsKey(targetUser) || numRecommendations <= 0) {
+            return Collections.emptyList();
+        }
         // 计算目标用户与其他用户的相似度
         Map<String, Double> userSimilarities = new HashMap<>();
         for (String user : userRatings.keySet()) {
             if (!user.equals(targetUser)) {
                 double similarity = calculateSimilarity(targetUser, user);
-                userSimilarities.put(user, similarity);
+                if (similarity > 0) {
+                    userSimilarities.put(user, similarity);
+                }
             }
         }
 
@@ -82,7 +92,7 @@ public class UserBasedCollaborativeFiltering {
 
         // 选择相似度最高的K个用户
         List<String> similarUsers = new ArrayList<>();
-        for (int i = 0; i < numRecommendations; i++) {
+        for (int i = 0; i < neighborCount; i++) {
             if (i < sortedSimilarities.size()) {
                 similarUsers.add(sortedSimilarities.get(i).getKey());
             } else {
@@ -94,9 +104,10 @@ public class UserBasedCollaborativeFiltering {
         Map<String, Double> recommendations = new HashMap<>();
         for (String user : similarUsers) {
             Map<String, Double> ratings = userRatings.get(user);
+            Double similarity = userSimilarities.get(user);
             for (String item : ratings.keySet()) {
                 if (userRatings.get(targetUser)!=null && !userRatings.get(targetUser).containsKey(item)) {
-                    recommendations.put(item, ratings.get(item));
+                    recommendations.merge(item, ratings.get(item) * similarity, Double::sum);
                 }
             }
         }

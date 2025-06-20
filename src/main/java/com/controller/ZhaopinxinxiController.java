@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Date;
 import java.util.List;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -257,6 +259,7 @@ public class ZhaopinxinxiController {
     public R autoSort2(@RequestParam Map<String, Object> params,ZhaopinxinxiEntity zhaopinxinxi, HttpServletRequest request){
         String userId = request.getSession().getAttribute("userId").toString();
         Integer limit = params.get("limit")==null?10:Integer.parseInt(params.get("limit").toString());
+        Integer neighborLimit = params.get("neighborLimit")==null?Math.max(limit * 3, 20):Integer.parseInt(params.get("neighborLimit").toString());
         List<StoreupEntity> storeups = storeupService.selectList(new EntityWrapper<StoreupEntity>().eq("type", 1).eq("tablename", "zhaopinxinxi"));
         Map<String, Map<String, Double>> ratings = new HashMap<>();
         if(storeups!=null && storeups.size()>0) {
@@ -281,34 +284,34 @@ public class ZhaopinxinxiController {
 
         // 为指定用户推荐物品
         String targetUser = userId;
-        int numRecommendations = limit;
-        List<String> recommendations = filter.recommendItems(targetUser, numRecommendations);
+        List<String> recommendations = filter.recommendItems(targetUser, neighborLimit, limit);
 
-        // 输出推荐结果
-        System.out.println("Recommendations for " + targetUser + ":");
-        for (String item : recommendations) {
-            System.out.println(item);
-        }
-
-        EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
-        ew.in("id", String.join(",", recommendations));
+        List<ZhaopinxinxiEntity> pageList = new ArrayList<ZhaopinxinxiEntity>();
+        Set<String> excludedIds = new LinkedHashSet<>(recommendations);
         if(recommendations!=null && recommendations.size()>0) {
-            ew.last("order by FIELD(id, "+"'"+String.join("','", recommendations)+"'"+")");
+            EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+            ew.in("id", recommendations);
+            ew.last("order by FIELD(id, "+String.join(",", recommendations)+")");
+            pageList.addAll(zhaopinxinxiService.selectList(ew));
         }
-
-        PageUtils page = zhaopinxinxiService.queryPage(params, ew);
-        List<ZhaopinxinxiEntity> pageList = (List<ZhaopinxinxiEntity>)page.getList();
         if(pageList.size()<limit) {
             int toAddNum = limit-pageList.size();
-            ew = new EntityWrapper<ZhaopinxinxiEntity>();
-            ew.notIn("id", recommendations);
-            ew.orderBy("id", false);
-            ew.last("limit "+toAddNum);
-            pageList.addAll(zhaopinxinxiService.selectList(ew));
-        } else if(pageList.size()>limit) {
+            EntityWrapper<ZhaopinxinxiEntity> hotWrapper = new EntityWrapper<ZhaopinxinxiEntity>();
+            if(!excludedIds.isEmpty()) {
+                hotWrapper.notIn("id", excludedIds);
+            }
+            hotWrapper.eq("sfsh", "是");
+            hotWrapper.orderBy("storeupnum", false);
+            hotWrapper.orderBy("clicktime", false);
+            hotWrapper.orderBy("id", false);
+            hotWrapper.last("limit "+toAddNum);
+            pageList.addAll(zhaopinxinxiService.selectList(hotWrapper));
+        }
+        if(pageList.size()>limit) {
             pageList = pageList.subList(0, limit);
         }
-        page.setList(pageList);
+        int currPage = params.get("page")==null?1:Integer.parseInt(params.get("page").toString());
+        PageUtils page = new PageUtils(pageList, pageList.size(), limit, currPage);
 
         return R.ok().put("data", page);
     }

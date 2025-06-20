@@ -49,7 +49,7 @@ public class QiyexinxiEntity<T> implements Serializable {
 	/**
 	 * 主键id
 	 */
-    @TableId
+    @TableId(type = IdType.AUTO)
 	private Long id;
 	/**
 	 * 企业账号

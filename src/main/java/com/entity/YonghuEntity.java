@@ -49,7 +49,7 @@ public class YonghuEntity<T> implements Serializable {
 	/**
 	 * 主键id
 	 */
-    @TableId
+    @TableId(type = IdType.AUTO)
 	private Long id;
 	/**
 	 * 用户账号

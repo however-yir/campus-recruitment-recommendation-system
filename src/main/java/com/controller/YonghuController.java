@@ -46,8 +46,8 @@ import java.io.IOException;
 /**
  * 用户
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2025-02-07 12:22:16
  */
 @RestController
@@ -61,10 +61,10 @@ public class YonghuController {
 
 
 
-    
+
 	@Autowired
 	private TokenService tokenService;
-	
+
 	/**
 	 * 登录
 	 */
@@ -75,32 +75,31 @@ public class YonghuController {
 		if(u==null || !u.getMima().equals(password)) {
 			return R.error("账号或密码不正确");
 		}
-		
+
         if(!"是".equals(u.getSfsh())) return R.error("账号已锁定，请联系管理员审核。");
 		String token = tokenService.generateToken(u.getId(), username,"yonghu",  "用户" );
 		return R.ok().put("token", token);
 	}
 
 
-	
+
 	/**
      * 注册
      */
-	@IgnoreAuth
-    @RequestMapping("/register")
+		@IgnoreAuth
+	    @RequestMapping("/register")
     public R register(@RequestBody YonghuEntity yonghu){
-    	//ValidatorUtils.validateEntity(yonghu);
-    	YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
-		if(u!=null) {
-			return R.error("注册用户已存在");
-		}
-		Long uId = new Date().getTime();
-		yonghu.setId(uId);
-        yonghuService.insert(yonghu);
-        return R.ok();
+		//ValidatorUtils.validateEntity(yonghu);
+		YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
+			if(u!=null) {
+				return R.error("注册用户已存在");
+			}
+			yonghu.setId(null);
+	        yonghuService.insert(yonghu);
+	        return R.ok();
     }
 
-	
+
 	/**
 	 * 退出
 	 */
@@ -109,28 +108,30 @@ public class YonghuController {
 		request.getSession().invalidate();
 		return R.ok("退出成功");
 	}
-	
+
 	/**
      * 获取用户的session用户信息
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request){
-    	Long id = (Long)request.getSession().getAttribute("userId");
+	Long id = (Long)request.getSession().getAttribute("userId");
         YonghuEntity u = yonghuService.selectById(id);
         return R.ok().put("data", u);
     }
-    
+
     /**
      * 密码重置
      */
-    @IgnoreAuth
-	@RequestMapping(value = "/resetPass")
+		@RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request){
-    	YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", username));
-    	if(u==null) {
-    		return R.error("账号不存在");
-    	}
-        u.setMima("123456");
+		if(!isAdmin(request)) {
+			return R.error(403, "仅管理员可重置密码");
+		}
+		YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", username));
+		if(u==null) {
+			return R.error("账号不存在");
+		}
+	        u.setMima("123456");
         yonghuService.updateById(u);
         return R.ok("密码已重置为：123456");
     }
@@ -152,18 +153,18 @@ public class YonghuController {
 				DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
     }
-    
+
     /**
      * 前台列表
      */
 	@IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,YonghuEntity yonghu, 
+    public R list(@RequestParam Map<String, Object> params,YonghuEntity yonghu,
 		HttpServletRequest request){
         EntityWrapper<YonghuEntity> ew = new EntityWrapper<YonghuEntity>();
 
 		PageUtils page = yonghuService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, yonghu), params), params));
-		
+
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
@@ -176,8 +177,8 @@ public class YonghuController {
      */
     @RequestMapping("/lists")
     public R list( YonghuEntity yonghu){
-       	EntityWrapper<YonghuEntity> ew = new EntityWrapper<YonghuEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( yonghu, "yonghu")); 
+	EntityWrapper<YonghuEntity> ew = new EntityWrapper<YonghuEntity>();
+	ew.allEq(MPUtil.allEQMapPre( yonghu, "yonghu"));
         return R.ok().put("data", yonghuService.selectListView(ew));
     }
 
@@ -187,11 +188,11 @@ public class YonghuController {
     @RequestMapping("/query")
     public R query(YonghuEntity yonghu){
         EntityWrapper< YonghuEntity> ew = new EntityWrapper< YonghuEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( yonghu, "yonghu")); 
+		ew.allEq(MPUtil.allEQMapPre( yonghu, "yonghu"));
 		YonghuView yonghuView =  yonghuService.selectView(ew);
 		return R.ok("查询用户成功").put("data", yonghuView);
     }
-	
+
     /**
      * 后台详情
      */
@@ -214,7 +215,7 @@ public class YonghuController {
 				DeSensUtil.desensitize(yonghu,deSens);
         return R.ok().put("data", yonghu);
     }
-    
+
 
 
 
@@ -226,17 +227,16 @@ public class YonghuController {
         if(yonghuService.selectCount(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()))>0) {
             return R.error("用户账号已存在");
         }
-    	yonghu.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(yonghu);
-    	YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
+	    yonghu.setId(null);
+	    //ValidatorUtils.validateEntity(yonghu);
+	    YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
 		if(u!=null) {
 			return R.error("用户已存在");
 		}
-		yonghu.setId(new Date().getTime());
         yonghuService.insert(yonghu);
         return R.ok().put("data",yonghu.getId());
     }
-    
+
     /**
      * 前台保存
      */
@@ -245,13 +245,12 @@ public class YonghuController {
         if(yonghuService.selectCount(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()))>0) {
             return R.error("用户账号已存在");
         }
-    	yonghu.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(yonghu);
-    	YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
+	    yonghu.setId(null);
+	    //ValidatorUtils.validateEntity(yonghu);
+	    YonghuEntity u = yonghuService.selectOne(new EntityWrapper<YonghuEntity>().eq("yonghuzhanghao", yonghu.getYonghuzhanghao()));
 		if(u!=null) {
 			return R.error("用户已存在");
 		}
-		yonghu.setId(new Date().getTime());
         yonghuService.insert(yonghu);
         return R.ok().put("data",yonghu.getId());
     }
@@ -267,18 +266,42 @@ public class YonghuController {
     @Transactional
     public R update(@RequestBody YonghuEntity yonghu, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yonghu);
-        if(yonghuService.selectCount(new EntityWrapper<YonghuEntity>().ne("id", yonghu.getId()).eq("yonghuzhanghao", yonghu.getYonghuzhanghao()))>0) {
+        if(yonghu.getId() == null) {
+            return R.error("用户ID不能为空");
+        }
+        YonghuEntity existing = yonghuService.selectById(yonghu.getId());
+        if(existing == null) {
+            return R.error("用户不存在");
+        }
+        if(StringUtils.isNotBlank(yonghu.getYonghuzhanghao())
+                && yonghuService.selectCount(new EntityWrapper<YonghuEntity>().ne("id", yonghu.getId()).eq("yonghuzhanghao", yonghu.getYonghuzhanghao()))>0) {
             return R.error("用户账号已存在");
         }
-        //全部更新
-        yonghuService.updateById(yonghu);
-    if(null!=yonghu.getYonghuzhanghao())
-    {
-        // 修改token
-        TokenEntity tokenEntity = new TokenEntity();
-        tokenEntity.setUsername(yonghu.getYonghuzhanghao());
-        tokenService.update(tokenEntity, new EntityWrapper<TokenEntity>().eq("userid", yonghu.getId()));
-    }
+        String oldUsername = existing.getYonghuzhanghao();
+        if(StringUtils.isNotBlank(yonghu.getYonghuzhanghao())) {
+            existing.setYonghuzhanghao(yonghu.getYonghuzhanghao());
+        }
+        if(StringUtils.isNotBlank(yonghu.getMima())) {
+            existing.setMima(yonghu.getMima());
+        }
+        if(StringUtils.isNotBlank(yonghu.getYonghuxingming())) {
+            existing.setYonghuxingming(yonghu.getYonghuxingming());
+        }
+        if(StringUtils.isNotBlank(yonghu.getXingbie())) {
+            existing.setXingbie(yonghu.getXingbie());
+        }
+        if(yonghu.getTouxiang() != null) {
+            existing.setTouxiang(yonghu.getTouxiang());
+        }
+        if(StringUtils.isNotBlank(yonghu.getLianxifangshi())) {
+            existing.setLianxifangshi(yonghu.getLianxifangshi());
+        }
+        yonghuService.updateById(existing);
+        if(StringUtils.isNotBlank(existing.getYonghuzhanghao()) && !existing.getYonghuzhanghao().equals(oldUsername)) {
+            TokenEntity tokenEntity = new TokenEntity();
+            tokenEntity.setUsername(existing.getYonghuzhanghao());
+            tokenService.update(tokenEntity, new EntityWrapper<TokenEntity>().eq("userid", existing.getId()));
+        }
 
 
         return R.ok();
@@ -302,7 +325,7 @@ public class YonghuController {
     }
 
 
-    
+
 
     /**
      * 删除
@@ -312,8 +335,13 @@ public class YonghuController {
         yonghuService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
-	
+
+    private boolean isAdmin(HttpServletRequest request) {
+        Object role = request.getSession().getAttribute("role");
+        return role != null && "管理员".equals(role.toString());
+    }
+
+
 
 
 

@@ -38,10 +38,10 @@ import com.utils.ValidatorUtils;
 @RequestMapping("users")
 @RestController
 public class UsersController{
-	
+
 	@Autowired
 	private UsersService userService;
-	
+
 	@Autowired
 	private TokenService tokenService;
 
@@ -58,7 +58,7 @@ public class UsersController{
 		String token = tokenService.generateToken(user.getId(),username, "users", user.getRole());
 		return R.ok().put("token", token);
 	}
-	
+
 	/**
 	 * 注册
 	 */
@@ -66,9 +66,9 @@ public class UsersController{
 	@PostMapping(value = "/register")
 	public R register(@RequestBody UsersEntity user){
 //    	ValidatorUtils.validateEntity(user);
-    	if(userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) !=null) {
-    		return R.error("用户已存在");
-    	}
+		if(userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) !=null) {
+		return R.error("用户已存在");
+	}
         userService.insert(user);
         return R.ok();
     }
@@ -81,29 +81,31 @@ public class UsersController{
 		request.getSession().invalidate();
 		return R.ok("退出成功");
 	}
-	
+
 	/**
      * 密码重置
      */
-    @IgnoreAuth
 	@RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request){
-    	UsersEntity user = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", username));
-    	if(user==null) {
-    		return R.error("账号不存在");
-    	}
-    	user.setPassword("123456");
+	    if(!isAdmin(request)) {
+		return R.error(403, "仅管理员可重置密码");
+	    }
+		UsersEntity user = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", username));
+		if(user==null) {
+			return R.error("账号不存在");
+		}
+		user.setPassword("123456");
         userService.update(user,null);
         return R.ok("密码已重置为：123456");
     }
-	
+
 	/**
      * 列表
      */
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,UsersEntity user){
         EntityWrapper<UsersEntity> ew = new EntityWrapper<UsersEntity>();
-    	PageUtils page = userService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.allLike(ew, user), params), params));
+	PageUtils page = userService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.allLike(ew, user), params), params));
         return R.ok().put("data", page);
     }
 
@@ -112,8 +114,8 @@ public class UsersController{
      */
     @RequestMapping("/list")
     public R list( UsersEntity user){
-       	EntityWrapper<UsersEntity> ew = new EntityWrapper<UsersEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( user, "user")); 
+	EntityWrapper<UsersEntity> ew = new EntityWrapper<UsersEntity>();
+	ew.allEq(MPUtil.allEQMapPre( user, "user"));
         return R.ok().put("data", userService.selectListView(ew));
     }
 
@@ -125,13 +127,13 @@ public class UsersController{
         UsersEntity user = userService.selectById(id);
         return R.ok().put("data", user);
     }
-    
+
     /**
      * 获取用户的session用户信息
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request){
-    	Long id = (Long)request.getSession().getAttribute("userId");
+	Long id = (Long)request.getSession().getAttribute("userId");
         UsersEntity user = userService.selectById(id);
         return R.ok().put("data", user);
     }
@@ -142,9 +144,9 @@ public class UsersController{
     @PostMapping("/save")
     public R save(@RequestBody UsersEntity user){
 //    	ValidatorUtils.validateEntity(user);
-    	if(userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) !=null) {
-    		return R.error("用户已存在");
-    	}
+	if(userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) !=null) {
+		return R.error("用户已存在");
+	}
         userService.insert(user);
         return R.ok();
     }
@@ -152,23 +154,52 @@ public class UsersController{
     /**
      * 修改
      */
-    @RequestMapping("/update")
+	    @RequestMapping("/update")
     public R update(@RequestBody UsersEntity user){
 //        ValidatorUtils.validateEntity(user);
-    	UsersEntity u = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername()));
-    	if(u!=null && u.getId()!=user.getId() && u.getUsername().equals(user.getUsername())) {
-    		return R.error("用户名已存在。");
-    	}
-        userService.updateById(user);//全部更新
-        return R.ok();
+		if(user.getId() == null) {
+			return R.error("用户ID不能为空");
+		}
+		UsersEntity existing = userService.selectById(user.getId());
+		if(existing == null) {
+			return R.error("用户不存在");
+		}
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(user.getUsername())) {
+			UsersEntity u = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername()));
+			if(u!=null && u.getId()!=user.getId() && u.getUsername().equals(user.getUsername())) {
+				return R.error("用户名已存在。");
+			}
+		}
+		String oldUsername = existing.getUsername();
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(user.getUsername())) {
+			existing.setUsername(user.getUsername());
+		}
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(user.getPassword())) {
+			existing.setPassword(user.getPassword());
+		}
+		if(user.getImage() != null) {
+			existing.setImage(user.getImage());
+		}
+	        userService.updateById(existing);
+	        if(org.apache.commons.lang3.StringUtils.isNotBlank(existing.getUsername()) && !existing.getUsername().equals(oldUsername)) {
+		TokenEntity tokenEntity = new TokenEntity();
+		tokenEntity.setUsername(existing.getUsername());
+		tokenService.update(tokenEntity, new EntityWrapper<TokenEntity>().eq("userid", existing.getId()));
+	        }
+	        return R.ok();
     }
 
     /**
      * 删除
      */
     @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids){
-        userService.deleteBatchIds(Arrays.asList(ids));
-        return R.ok();
+	    public R delete(@RequestBody Long[] ids){
+	        userService.deleteBatchIds(Arrays.asList(ids));
+	        return R.ok();
     }
+
+	private boolean isAdmin(HttpServletRequest request) {
+		Object role = request.getSession().getAttribute("role");
+		return role != null && "管理员".equals(role.toString());
+	}
 }

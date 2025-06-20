@@ -1,4 +1,4 @@
-# Campus Recruitment Recommendation System
+# Campus Recruitment Recommendation System - 校园招聘推荐系统 | Campus Job Matching Platform
 
 🔥 A campus recruitment recommendation system based on Spring Boot, Vue2, and MySQL.  
 🚀 Built with user-based collaborative filtering, cold-start fallback, and multi-role recruitment workflows.  

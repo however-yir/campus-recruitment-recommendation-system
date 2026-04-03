@@ -2,7 +2,7 @@
 
 🔥 A campus recruitment recommendation system based on Spring Boot, Vue2, and MySQL.  
 🚀 Built with user-based collaborative filtering, cold-start fallback, and multi-role recruitment workflows.  
-⭐ Supports job matching, resume delivery, enterprise management, and admin operations.
+⭐ Supports job matching, resume delivery, enterprise management, admin operations, and AI career Q&A.
 
 <p align="center">
   面向高校求职场景的校园招聘推荐系统（学生端 / 企业端 / 管理端）
@@ -52,6 +52,7 @@
 - 用户、企业、管理员资料修改改为白名单字段更新，避免整对象覆盖导致的误清空与越权改动。
 - 学生与企业主键回归数据库自增，避免时间戳手工赋值带来的并发冲突。
 - 协同过滤推荐改为按相似度加权累计得分，并在推荐不足时回退到热门岗位兜底。
+- 新增 `AI 智能求职问答` 页面与后端接口，支持对接 OpenAI 兼容模型 API（如 SiliconFlow）。
 
 该仓库当前为“可运行 + 可学习 + 可二开”的工程形态，适合作为：
 
@@ -106,6 +107,7 @@
 - 求职信息提交（应聘行为记录）
 - 求职简历维护与投递
 - 招聘结果查看
+- AI 智能求职问答（大模型 API 调用）
 - 论坛发帖/回帖互动
 - 留言反馈提交
 
@@ -345,6 +347,12 @@ mvn clean package
 mvn spring-boot:run
 ```
 
+如需自动加载 `.env.local`（含数据库与 AI 变量），可使用：
+
+```bash
+./scripts/run-dev-with-env.sh
+```
+
 ### 10.6 启动前台（学生/企业访问）
 
 ```bash
@@ -377,6 +385,26 @@ cd src/main/resources/admin/admin
 npm run build
 ```
 
+### 10.9 启用 AI 智能求职问答（SiliconFlow 示例）
+
+在项目根目录创建或修改 `.env.local`（该文件已被 `.gitignore` 忽略）：
+
+```bash
+AI_ASSISTANT_ENABLED=true
+AI_ASSISTANT_API_URL=https://api.siliconflow.cn/v1/chat/completions
+AI_ASSISTANT_API_KEY=your_key
+AI_ASSISTANT_AUTH_HEADER=Authorization
+AI_ASSISTANT_AUTH_SCHEME=Bearer
+AI_ASSISTANT_MODEL=Pro/deepseek-ai/DeepSeek-V3.2
+AI_ASSISTANT_TIMEOUT_MS=120000
+AI_ASSISTANT_SYSTEM_PROMPT=你是一个有用的助手
+```
+
+启动后访问：
+
+- 前台页面：`/front/dist/index.html#/index/aiCareerChat`
+- 后端接口：`POST /hire/ai/career/ask`
+
 ---
 
 ## 11. 配置说明
@@ -389,6 +417,7 @@ npm run build
 - MySQL 连接信息
 - MyBatis-Plus 映射路径
 - 文件上传大小限制
+- AI 求职问答配置（OpenAI 兼容 API）
 
 ### 11.2 前台配置
 
@@ -398,6 +427,7 @@ npm run build
 
 - `baseUrl: 'http://localhost:8080/hire/'`
 - `name: '/hire'`
+- `indexNav` 中已新增 `AI求职问答` 菜单项（`/index/aiCareerChat`）
 
 ### 11.3 后台配置
 
@@ -407,6 +437,19 @@ npm run build
 
 - `url: 'http://localhost:8080/hire/'`
 - `indexUrl: 'http://localhost:8080/hire/front/dist/index.html'`
+
+### 11.4 AI 求职问答关键配置项
+
+文件：`src/main/resources/application.yml`
+
+- `ai.assistant.enabled`
+- `ai.assistant.api-url`
+- `ai.assistant.api-key`
+- `ai.assistant.auth-header`
+- `ai.assistant.auth-scheme`（`Bearer` 或 `NONE`）
+- `ai.assistant.model`
+- `ai.assistant.timeout-ms`
+- `ai.assistant.system-prompt`
 
 ---
 

@@ -616,10 +616,10 @@ MIT
 
 ## 简历改造清单
 
-- 追踪文件：[docs/resume-upgrade-checklist.md](/Users/liuzhuoran/Documents/Playground/campus-recruitment-recommendation-system/docs/resume-upgrade-checklist.md)
-- 环境模板：[.env.example](/Users/liuzhuoran/Documents/Playground/campus-recruitment-recommendation-system/.env.example)
-- 开发 compose：[docker-compose.dev.yml](/Users/liuzhuoran/Documents/Playground/campus-recruitment-recommendation-system/docker-compose.dev.yml)
-- CI 配置：[.github/workflows/ci.yml](/Users/liuzhuoran/Documents/Playground/campus-recruitment-recommendation-system/.github/workflows/ci.yml)
-- 评估脚本：[scripts/evaluation/recommendation_metrics.py](/Users/liuzhuoran/Documents/Playground/campus-recruitment-recommendation-system/scripts/evaluation/recommendation_metrics.py)
+- 追踪文件：[docs/resume-upgrade-checklist.md](docs/resume-upgrade-checklist.md)
+- 环境模板：[.env.example](.env.example)
+- 开发 compose：[docker-compose.dev.yml](docker-compose.dev.yml)
+- CI 配置：[.github/workflows/ci.yml](.github/workflows/ci.yml)
+- 评估脚本：[scripts/evaluation/recommendation_metrics.py](scripts/evaluation/recommendation_metrics.py)
 
 本轮已落地：推荐兜底与解释能力、配置外置化、评估脚本骨架与 CI 基线。

@@ -321,13 +321,30 @@ git clone https://github.com/however-yir/campus-recruitment-recommendation-syste
 cd campus-recruitment-recommendation-system
 ```
 
-### 10.3 初始化数据库
+### 10.3 推荐启动顺序
+
+建议按固定顺序启动，避免前端接口 404 或数据库连接失败：
+
+1. 启动依赖服务（MySQL / Redis）
+2. 初始化数据库
+3. 启动后端
+4. 启动前台（学生/企业）
+5. 启动后台（管理员）
+
+### 10.4 启动依赖服务（可选）
+
+```bash
+cp .env.example .env.local
+docker compose -f docker-compose.dev.yml up -d
+```
+
+### 10.5 初始化数据库
 
 ```bash
 mysql -uroot -p < db/hire.sql
 ```
 
-### 10.4 配置后端
+### 10.6 配置后端
 
 编辑 `src/main/resources/application.yml`：
 
@@ -340,7 +357,7 @@ mysql -uroot -p < db/hire.sql
 - 端口：`8080`
 - 上下文路径：`/hire`
 
-### 10.5 启动后端
+### 10.7 启动后端
 
 ```bash
 mvn clean package
@@ -353,27 +370,27 @@ mvn spring-boot:run
 ./scripts/run-dev-with-env.sh
 ```
 
-### 10.6 启动前台（学生/企业访问）
+### 10.8 启动前台（学生/企业访问）
 
 ```bash
 cd src/main/resources/front/front
-npm install
+npm ci
 npm run serve
 ```
 
 访问地址：`http://localhost:8082`
 
-### 10.7 启动后台（管理员）
+### 10.9 启动后台（管理员）
 
 ```bash
 cd src/main/resources/admin/admin
-npm install
+npm ci
 npm run serve
 ```
 
 访问地址：`http://localhost:8081`
 
-### 10.8 生产构建（可选）
+### 10.10 生产构建（可选）
 
 ```bash
 # 前台
@@ -385,7 +402,7 @@ cd src/main/resources/admin/admin
 npm run build
 ```
 
-### 10.9 启用 AI 智能求职问答（SiliconFlow 示例）
+### 10.11 启用 AI 智能求职问答（SiliconFlow 示例）
 
 在项目根目录创建或修改 `.env.local`（该文件已被 `.gitignore` 忽略）：
 

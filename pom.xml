@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.2.RELEASE</version>
+		<version>2.7.18</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.jlwl</groupId>
@@ -17,7 +17,16 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<fastjson.version>1.2.8</fastjson.version>
+		<fastjson.version>1.2.83</fastjson.version>
+		<mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
+		<shiro.version>1.13.0</shiro.version>
+		<protobuf.version>3.25.3</protobuf.version>
+		<commons-lang3.version>3.12.0</commons-lang3.version>
+		<commons-io.version>2.15.1</commons-io.version>
+		<hutool.version>5.8.26</hutool.version>
+		<mysql-connector.version>8.0.33</mysql-connector.version>
+		<poi.version>5.2.5</poi.version>
+		<httpclient.version>4.5.14</httpclient.version>
 		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
 	</properties>
 
@@ -29,7 +38,7 @@
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
-			<version>2.1.1</version>
+			<version>${mybatis-spring-boot-starter.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
@@ -39,11 +48,12 @@
 		<dependency>
 		    <groupId>mysql</groupId>
 		    <artifactId>mysql-connector-java</artifactId>
+		    <version>${mysql-connector.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-spring</artifactId>
-			<version>1.3.2</version>
+			<version>${shiro.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -59,13 +69,13 @@
 		<dependency>
 		    <groupId>com.google.protobuf</groupId>
 		    <artifactId>protobuf-java</artifactId>
-		    <version>3.10.0</version>
+		    <version>${protobuf.version}</version>
 		</dependency>
 		
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
 		
 		<dependency>
@@ -77,14 +87,14 @@
 		<dependency>
 		    <groupId>commons-io</groupId>
 		    <artifactId>commons-io</artifactId>
-		    <version>2.5</version>
+		    <version>${commons-io.version}</version>
 		</dependency>
 
 
 		<dependency>
 		    <groupId>cn.hutool</groupId>
 		    <artifactId>hutool-all</artifactId>
-		    <version>4.0.12</version>
+		    <version>${hutool.version}</version>
 		</dependency>
 		
 		<!-- FastJson -->
@@ -126,20 +136,20 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.11</version>
+            <version>${poi.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.11</version>
+            <version>${poi.version}</version>
         </dependency>
 
 		
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
+            <version>${httpclient.version}</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

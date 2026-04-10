@@ -50,8 +50,7 @@ import md5 from 'js-md5';
 // 后台地图
 Vue.use(VueAMap)
 VueAMap.initAMapApiLoader({
-  //key: 'ca04cee7ac952691aa67a131e6f0cee0',
-  key: '001d42eaa139dc53fd655e7c23c0187e',
+  key: process.env.VUE_APP_AMAP_KEY || '',
   plugin: ['AMap.Autocomplete', 'AMap.PlaceSearch', 'AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType', 'AMap.PolyEditor', 'AMap.CircleEditor', 'AMap.Geocoder','AMap.CitySearch'],
   // 默认高德 sdk 版本为 1.4.4
   v: '1.4.4'

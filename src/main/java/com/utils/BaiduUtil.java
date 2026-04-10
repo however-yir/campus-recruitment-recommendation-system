@@ -101,12 +101,12 @@ public class BaiduUtil {
         return null;
     }
 
-    //设置APPID/AK/SK
-    public static final String APP_ID = "49214550";
-    public static final String API_KEY = "7Otjpv2kn0ljQk45qXOXh5MO";
-    public static final String SECRET_KEY = "BMfbXRbTIVaB4C3SbRTtGqDv1wHDvyXS";
-    public static final String ACCESS_KEY = "9dd9b2ea56b042c6a468bfeada1209a3";
-    public static final String ACCESS_SECRET_KEY = "45a0aa98b86b4c54b9dc8ede3cc67274";
+    // 从环境变量读取百度云配置，避免在源码中硬编码密钥
+    public static final String APP_ID = System.getenv().getOrDefault("BAIDU_APP_ID", "REPLACE_ME");
+    public static final String API_KEY = System.getenv().getOrDefault("BAIDU_API_KEY", "REPLACE_ME");
+    public static final String SECRET_KEY = System.getenv().getOrDefault("BAIDU_SECRET_KEY", "REPLACE_ME");
+    public static final String ACCESS_KEY = System.getenv().getOrDefault("BAIDU_ACCESS_KEY", "REPLACE_ME");
+    public static final String ACCESS_SECRET_KEY = System.getenv().getOrDefault("BAIDU_ACCESS_SECRET_KEY", "REPLACE_ME");
     private static AipOcr ocrClient = null;
 
     /**

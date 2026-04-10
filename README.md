@@ -473,6 +473,17 @@ AI_ASSISTANT_SYSTEM_PROMPT=你是一个有用的助手
 - `ai.assistant.timeout-ms`
 - `ai.assistant.system-prompt`
 
+### 11.5 安全相关环境变量（新增）
+
+为避免密钥硬编码，以下配置建议通过环境变量注入：
+
+- `BAIDU_APP_ID`
+- `BAIDU_API_KEY`
+- `BAIDU_SECRET_KEY`
+- `BAIDU_ACCESS_KEY`
+- `BAIDU_ACCESS_SECRET_KEY`
+- `VUE_APP_AMAP_KEY`（前后台地图 SDK Key）
+
 ---
 
 ## 12. 测试与质量保障

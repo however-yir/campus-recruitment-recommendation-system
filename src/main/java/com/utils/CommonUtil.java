@@ -59,22 +59,22 @@ public class CommonUtil {
         FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
 
         // 拿到单元格类型
-        int cellType = cell.getCellType();
+        CellType cellType = cell.getCellType();
         switch (cellType) {
             // 字符串类型
-            case Cell.CELL_TYPE_STRING:
+            case STRING:
                 resultValue = StringUtils.isEmpty(cell.getStringCellValue()) ? "" : cell.getStringCellValue().trim();
                 break;
             // 计算公式
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 resultValue = formatter.formatCellValue(cell, evaluator);
                 break;
             // 布尔类型
-            case Cell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 resultValue = String.valueOf(cell.getBooleanCellValue());
                 break;
             // 数值类型
-            case Cell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 /**
                  * format 的值可能为以下这些 yyyyMMddHHmmss
                  * yyyy-MM-dd----- 14

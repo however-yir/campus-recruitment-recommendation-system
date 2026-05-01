@@ -18,6 +18,9 @@
   <img src="https://img.shields.io/badge/Architecture-B%2FS-informational" alt="B/S" />
 </p>
 
+> **定位说明**：本项目为教学/展示用途的校园招聘推荐系统，技术栈（Java 8 / Spring Boot 2.2.2 / Vue2）保留毕业设计原始选型。
+> 生产级 Spring AI RAG 后端请参考 [knowledgeops-agent](https://github.com/however-yir/knowledgeops-agent)。
+
 ---
 
 ## 目录

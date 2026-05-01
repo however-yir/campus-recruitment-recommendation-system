@@ -1,21 +1,36 @@
-version: "3.9"
 services:
   mysql:
     image: mysql:8.0
     container_name: campus-recruitment-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-123456}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
       MYSQL_DATABASE: hire
     ports:
       - "3310:3306"
     volumes:
       - campus_recruitment_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: campus-recruitment-redis
+    restart: unless-stopped
     ports:
       - "6381:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - campus_recruitment_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   campus_recruitment_mysql_data:
+  campus_recruitment_redis_data:

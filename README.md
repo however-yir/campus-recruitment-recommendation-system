@@ -16,10 +16,12 @@
   <img src="https://img.shields.io/badge/Vue-2.x-42b883" alt="Vue2" />
   <img src="https://img.shields.io/badge/MySQL-5.7%2B-orange" alt="MySQL" />
   <img src="https://img.shields.io/badge/Architecture-B%2FS-informational" alt="B/S" />
+  <img src="https://img.shields.io/badge/Purpose-教学%2F毕业设计-blueviolet" alt="Academic" />
 </p>
 
-> **定位说明**：本项目为教学/展示用途的校园招聘推荐系统，技术栈（Java 8 / Spring Boot 2.2.2 / Vue2）保留毕业设计原始选型。
-> 生产级 Spring AI RAG 后端请参考 [knowledgeops-agent](https://github.com/however-yir/knowledgeops-agent)。
+> **Academic Project / 教学与毕业设计项目**
+> 本仓库为高校课程设计与毕业设计的教学参考项目，基于 Spring Boot + Vue2 实现校园招聘推荐系统（含协同过滤推荐引擎）。适合推荐系统入门学习、全栈项目实践及二次开发参考。
+> 技术栈（Java 8 / Spring Boot 2.2.2 / Vue2）保留毕业设计原始选型。生产级 Spring AI RAG 后端请参考 [knowledgeops-agent](https://github.com/however-yir/knowledgeops-agent)。
 
 ---
 

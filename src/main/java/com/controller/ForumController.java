@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ForumEntity;
@@ -73,7 +73,7 @@ public class ForumController {
         if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
             forum.setUserid((Long)request.getSession().getAttribute("userId"));
         }
-        EntityWrapper<ForumEntity> ew = new EntityWrapper<ForumEntity>();
+        QueryWrapper<ForumEntity> ew = new QueryWrapper<ForumEntity>();
 
 
 
@@ -92,7 +92,7 @@ public class ForumController {
     	if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
     		forum.setUserid((Long)request.getSession().getAttribute("userId"));
     	}
-        EntityWrapper<ForumEntity> ew = new EntityWrapper<ForumEntity>();
+        QueryWrapper<ForumEntity> ew = new QueryWrapper<ForumEntity>();
 
 		PageUtils page = forumService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, forum), params), params));
 		
@@ -109,7 +109,7 @@ public class ForumController {
     @IgnoreAuth
     @RequestMapping("/flist")
     public R flist(@RequestParam Map<String, Object> params,ForumEntity forum, HttpServletRequest request){
-        EntityWrapper<ForumEntity> ew = new EntityWrapper<ForumEntity>();
+        QueryWrapper<ForumEntity> ew = new QueryWrapper<ForumEntity>();
     	PageUtils page = forumService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, forum), params), params));
         return R.ok().put("data", page);
     }
@@ -119,7 +119,7 @@ public class ForumController {
      */
     @RequestMapping("/query")
     public R query(ForumEntity forum){
-        EntityWrapper< ForumEntity> ew = new EntityWrapper< ForumEntity>();
+        QueryWrapper< ForumEntity> ew = new QueryWrapper< ForumEntity>();
  		ew.allEq(MPUtil.allEQMapPre( forum, "forum")); 
 		ForumView forumView =  forumService.selectView(ew);
 		return R.ok("查询交流论坛成功").put("data", forumView);
@@ -130,7 +130,7 @@ public class ForumController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ForumEntity forum = forumService.selectById(id);
+        ForumEntity forum = forumService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forum,deSens);
         return R.ok().put("data", forum);
@@ -142,7 +142,7 @@ public class ForumController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ForumEntity forum = forumService.selectById(id);
+        ForumEntity forum = forumService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forum,deSens);
         return R.ok().put("data", forum);
@@ -154,14 +154,14 @@ public class ForumController {
 	@IgnoreAuth
     @RequestMapping("/list/{id}")
     public R list(@PathVariable("id") String id){
-        ForumEntity forum = forumService.selectById(id);
+        ForumEntity forum = forumService.getById(id);
         getChilds(forum);
         return R.ok().put("data", forum);
     }
     
 	private ForumEntity getChilds(ForumEntity forum) {
     	List<ForumEntity> childs = new ArrayList<ForumEntity>();
-    	childs = forumService.selectList(new EntityWrapper<ForumEntity>().eq("parentid", forum.getId()));
+    	childs = forumService.list(new QueryWrapper<ForumEntity>().eq("parentid", forum.getId()));
     	if(childs == null || childs.size()==0) {
     		return null;
     	}
@@ -181,7 +181,7 @@ public class ForumController {
     public R save(@RequestBody ForumEntity forum, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forum);
     	forum.setUserid((Long)request.getSession().getAttribute("userId"));
-        forumService.insert(forum);
+        forumService.save(forum);
         return R.ok().put("data",forum.getId());
     }
     
@@ -192,7 +192,7 @@ public class ForumController {
     public R add(@RequestBody ForumEntity forum, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forum);
     	forum.setUserid((Long)request.getSession().getAttribute("userId"));
-        forumService.insert(forum);
+        forumService.save(forum);
         return R.ok().put("data",forum.getId());
     }
 
@@ -204,7 +204,7 @@ public class ForumController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        ForumEntity forum = forumService.selectOne(new EntityWrapper<ForumEntity>().eq("", username));
+        ForumEntity forum = forumService.getOne(new QueryWrapper<ForumEntity>().eq("", username));
         return R.ok().put("data", forum);
     }
 
@@ -232,7 +232,7 @@ public class ForumController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        forumService.deleteBatchIds(Arrays.asList(ids));
+        forumService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -243,7 +243,7 @@ public class ForumController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,ForumEntity forum, HttpServletRequest request,String pre){
-        EntityWrapper<ForumEntity> ew = new EntityWrapper<ForumEntity>();
+        QueryWrapper<ForumEntity> ew = new QueryWrapper<ForumEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

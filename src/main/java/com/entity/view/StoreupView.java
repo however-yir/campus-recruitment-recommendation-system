@@ -2,7 +2,7 @@ package com.entity.view;
 
 import com.entity.StoreupEntity;
 
-import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.annotation.TableName;
 import org.apache.commons.beanutils.BeanUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;

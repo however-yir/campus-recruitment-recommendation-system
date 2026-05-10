@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.StoreupEntity;
@@ -73,7 +73,7 @@ public class StoreupController {
         if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
             storeup.setUserid((Long)request.getSession().getAttribute("userId"));
         }
-        EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
+        QueryWrapper<StoreupEntity> ew = new QueryWrapper<StoreupEntity>();
 
 
 
@@ -90,7 +90,7 @@ public class StoreupController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,StoreupEntity storeup, 
 		HttpServletRequest request){
-        EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
+        QueryWrapper<StoreupEntity> ew = new QueryWrapper<StoreupEntity>();
 
 		PageUtils page = storeupService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, storeup), params), params));
 		
@@ -106,7 +106,7 @@ public class StoreupController {
      */
     @RequestMapping("/lists")
     public R list( StoreupEntity storeup){
-       	EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
+       	QueryWrapper<StoreupEntity> ew = new QueryWrapper<StoreupEntity>();
       	ew.allEq(MPUtil.allEQMapPre( storeup, "storeup")); 
         return R.ok().put("data", storeupService.selectListView(ew));
     }
@@ -116,7 +116,7 @@ public class StoreupController {
      */
     @RequestMapping("/query")
     public R query(StoreupEntity storeup){
-        EntityWrapper< StoreupEntity> ew = new EntityWrapper< StoreupEntity>();
+        QueryWrapper< StoreupEntity> ew = new QueryWrapper< StoreupEntity>();
  		ew.allEq(MPUtil.allEQMapPre( storeup, "storeup")); 
 		StoreupView storeupView =  storeupService.selectView(ew);
 		return R.ok("查询收藏表成功").put("data", storeupView);
@@ -127,7 +127,7 @@ public class StoreupController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        StoreupEntity storeup = storeupService.selectById(id);
+        StoreupEntity storeup = storeupService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(storeup,deSens);
         return R.ok().put("data", storeup);
@@ -139,7 +139,7 @@ public class StoreupController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        StoreupEntity storeup = storeupService.selectById(id);
+        StoreupEntity storeup = storeupService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(storeup,deSens);
         return R.ok().put("data", storeup);
@@ -155,7 +155,7 @@ public class StoreupController {
     public R save(@RequestBody StoreupEntity storeup, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(storeup);
     	storeup.setUserid((Long)request.getSession().getAttribute("userId"));
-        storeupService.insert(storeup);
+        storeupService.save(storeup);
         return R.ok().put("data",storeup.getId());
     }
     
@@ -165,7 +165,7 @@ public class StoreupController {
     @RequestMapping("/add")
     public R add(@RequestBody StoreupEntity storeup, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(storeup);
-        storeupService.insert(storeup);
+        storeupService.save(storeup);
         return R.ok().put("data",storeup.getId());
     }
 
@@ -177,7 +177,7 @@ public class StoreupController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        StoreupEntity storeup = storeupService.selectOne(new EntityWrapper<StoreupEntity>().eq("", username));
+        StoreupEntity storeup = storeupService.getOne(new QueryWrapper<StoreupEntity>().eq("", username));
         return R.ok().put("data", storeup);
     }
 
@@ -205,7 +205,7 @@ public class StoreupController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        storeupService.deleteBatchIds(Arrays.asList(ids));
+        storeupService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -216,7 +216,7 @@ public class StoreupController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,StoreupEntity storeup, HttpServletRequest request,String pre){
-        EntityWrapper<StoreupEntity> ew = new EntityWrapper<StoreupEntity>();
+        QueryWrapper<StoreupEntity> ew = new QueryWrapper<StoreupEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

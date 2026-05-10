@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.MessagesEntity;
@@ -73,7 +73,7 @@ public class MessagesController {
         if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
             messages.setUserid((Long)request.getSession().getAttribute("userId"));
         }
-        EntityWrapper<MessagesEntity> ew = new EntityWrapper<MessagesEntity>();
+        QueryWrapper<MessagesEntity> ew = new QueryWrapper<MessagesEntity>();
 
 
 
@@ -90,7 +90,7 @@ public class MessagesController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,MessagesEntity messages, 
 		HttpServletRequest request){
-        EntityWrapper<MessagesEntity> ew = new EntityWrapper<MessagesEntity>();
+        QueryWrapper<MessagesEntity> ew = new QueryWrapper<MessagesEntity>();
 
 		PageUtils page = messagesService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, messages), params), params));
 		
@@ -106,7 +106,7 @@ public class MessagesController {
      */
     @RequestMapping("/lists")
     public R list( MessagesEntity messages){
-       	EntityWrapper<MessagesEntity> ew = new EntityWrapper<MessagesEntity>();
+       	QueryWrapper<MessagesEntity> ew = new QueryWrapper<MessagesEntity>();
       	ew.allEq(MPUtil.allEQMapPre( messages, "messages")); 
         return R.ok().put("data", messagesService.selectListView(ew));
     }
@@ -116,7 +116,7 @@ public class MessagesController {
      */
     @RequestMapping("/query")
     public R query(MessagesEntity messages){
-        EntityWrapper< MessagesEntity> ew = new EntityWrapper< MessagesEntity>();
+        QueryWrapper< MessagesEntity> ew = new QueryWrapper< MessagesEntity>();
  		ew.allEq(MPUtil.allEQMapPre( messages, "messages")); 
 		MessagesView messagesView =  messagesService.selectView(ew);
 		return R.ok("查询留言反馈成功").put("data", messagesView);
@@ -127,7 +127,7 @@ public class MessagesController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        MessagesEntity messages = messagesService.selectById(id);
+        MessagesEntity messages = messagesService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(messages,deSens);
         return R.ok().put("data", messages);
@@ -139,7 +139,7 @@ public class MessagesController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        MessagesEntity messages = messagesService.selectById(id);
+        MessagesEntity messages = messagesService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(messages,deSens);
         return R.ok().put("data", messages);
@@ -154,7 +154,7 @@ public class MessagesController {
     @RequestMapping("/save")
     public R save(@RequestBody MessagesEntity messages, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(messages);
-        messagesService.insert(messages);
+        messagesService.save(messages);
         return R.ok().put("data",messages.getId());
     }
     
@@ -164,7 +164,7 @@ public class MessagesController {
     @RequestMapping("/add")
     public R add(@RequestBody MessagesEntity messages, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(messages);
-        messagesService.insert(messages);
+        messagesService.save(messages);
         return R.ok().put("data",messages.getId());
     }
 
@@ -176,7 +176,7 @@ public class MessagesController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        MessagesEntity messages = messagesService.selectOne(new EntityWrapper<MessagesEntity>().eq("", username));
+        MessagesEntity messages = messagesService.getOne(new QueryWrapper<MessagesEntity>().eq("", username));
         return R.ok().put("data", messages);
     }
 
@@ -204,7 +204,7 @@ public class MessagesController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        messagesService.deleteBatchIds(Arrays.asList(ids));
+        messagesService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -215,7 +215,7 @@ public class MessagesController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,MessagesEntity messages, HttpServletRequest request,String pre){
-        EntityWrapper<MessagesEntity> ew = new EntityWrapper<MessagesEntity>();
+        QueryWrapper<MessagesEntity> ew = new QueryWrapper<MessagesEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

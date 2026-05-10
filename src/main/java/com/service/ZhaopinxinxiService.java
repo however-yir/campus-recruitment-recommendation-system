@@ -1,7 +1,8 @@
 package com.service;
 
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.service.IService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.utils.PageUtils;
 import com.entity.ZhaopinxinxiEntity;
 import java.util.List;

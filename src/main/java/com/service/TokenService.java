@@ -4,8 +4,9 @@ package com.service;
 import java.util.List;
 import java.util.Map;
 
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.service.IService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.entity.TokenEntity;
 import com.utils.PageUtils;
 

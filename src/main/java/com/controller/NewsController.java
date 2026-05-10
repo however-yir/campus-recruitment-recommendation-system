@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.NewsEntity;
@@ -74,7 +74,7 @@ public class NewsController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,NewsEntity news,
 		HttpServletRequest request){
-        EntityWrapper<NewsEntity> ew = new EntityWrapper<NewsEntity>();
+        QueryWrapper<NewsEntity> ew = new QueryWrapper<NewsEntity>();
 
 
 
@@ -91,7 +91,7 @@ public class NewsController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,NewsEntity news, 
 		HttpServletRequest request){
-        EntityWrapper<NewsEntity> ew = new EntityWrapper<NewsEntity>();
+        QueryWrapper<NewsEntity> ew = new QueryWrapper<NewsEntity>();
 
 		PageUtils page = newsService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, news), params), params));
 		
@@ -107,7 +107,7 @@ public class NewsController {
      */
     @RequestMapping("/lists")
     public R list( NewsEntity news){
-       	EntityWrapper<NewsEntity> ew = new EntityWrapper<NewsEntity>();
+       	QueryWrapper<NewsEntity> ew = new QueryWrapper<NewsEntity>();
       	ew.allEq(MPUtil.allEQMapPre( news, "news")); 
         return R.ok().put("data", newsService.selectListView(ew));
     }
@@ -117,7 +117,7 @@ public class NewsController {
      */
     @RequestMapping("/query")
     public R query(NewsEntity news){
-        EntityWrapper< NewsEntity> ew = new EntityWrapper< NewsEntity>();
+        QueryWrapper< NewsEntity> ew = new QueryWrapper< NewsEntity>();
  		ew.allEq(MPUtil.allEQMapPre( news, "news")); 
 		NewsView newsView =  newsService.selectView(ew);
 		return R.ok("查询公告信息成功").put("data", newsView);
@@ -128,11 +128,11 @@ public class NewsController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        NewsEntity news = newsService.selectById(id);
+        NewsEntity news = newsService.getById(id);
 		news.setClicknum(news.getClicknum()+1);
 		news.setClicktime(new Date());
 		newsService.updateById(news);
-        news = newsService.selectView(new EntityWrapper<NewsEntity>().eq("id", id));
+        news = newsService.selectView(new QueryWrapper<NewsEntity>().eq("id", id));
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(news,deSens);
         return R.ok().put("data", news);
@@ -144,11 +144,11 @@ public class NewsController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        NewsEntity news = newsService.selectById(id);
+        NewsEntity news = newsService.getById(id);
 		news.setClicknum(news.getClicknum()+1);
 		news.setClicktime(new Date());
 		newsService.updateById(news);
-        news = newsService.selectView(new EntityWrapper<NewsEntity>().eq("id", id));
+        news = newsService.selectView(new QueryWrapper<NewsEntity>().eq("id", id));
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(news,deSens);
         return R.ok().put("data", news);
@@ -161,7 +161,7 @@ public class NewsController {
      */
     @RequestMapping("/thumbsup/{id}")
     public R vote(@PathVariable("id") String id,String type){
-        NewsEntity news = newsService.selectById(id);
+        NewsEntity news = newsService.getById(id);
         if(type.equals("1")) {
         	news.setThumbsupnum(news.getThumbsupnum()+1);
         } else {
@@ -177,7 +177,7 @@ public class NewsController {
     @RequestMapping("/save")
     public R save(@RequestBody NewsEntity news, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(news);
-        newsService.insert(news);
+        newsService.save(news);
         return R.ok().put("data",news.getId());
     }
     
@@ -187,7 +187,7 @@ public class NewsController {
     @RequestMapping("/add")
     public R add(@RequestBody NewsEntity news, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(news);
-        newsService.insert(news);
+        newsService.save(news);
         return R.ok().put("data",news.getId());
     }
 
@@ -199,7 +199,7 @@ public class NewsController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        NewsEntity news = newsService.selectOne(new EntityWrapper<NewsEntity>().eq("", username));
+        NewsEntity news = newsService.getOne(new QueryWrapper<NewsEntity>().eq("", username));
         return R.ok().put("data", news);
     }
 
@@ -227,7 +227,7 @@ public class NewsController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        newsService.deleteBatchIds(Arrays.asList(ids));
+        newsService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -238,7 +238,7 @@ public class NewsController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,NewsEntity news, HttpServletRequest request,String pre){
-        EntityWrapper<NewsEntity> ew = new EntityWrapper<NewsEntity>();
+        QueryWrapper<NewsEntity> ew = new QueryWrapper<NewsEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();
@@ -268,7 +268,7 @@ public class NewsController {
     public R autoSort2(@RequestParam Map<String, Object> params,NewsEntity news, HttpServletRequest request){
         String userId = request.getSession().getAttribute("userId").toString();
         String inteltypeColumn = "typename";
-        List<StoreupEntity> storeups = storeupService.selectList(new EntityWrapper<StoreupEntity>().eq("type", 1).eq("userid", userId).eq("tablename", "news").orderBy("addtime", false));
+        List<StoreupEntity> storeups = storeupService.list(new QueryWrapper<StoreupEntity>().eq("type", 1).eq("userid", userId).eq("tablename", "news").orderBy(true, false, "addtime"));
         List<String> inteltypes = new ArrayList<String>();
         Integer limit = params.get("limit")==null?10:Integer.parseInt(params.get("limit").toString());
         List<NewsEntity> newsList = new ArrayList<NewsEntity>();
@@ -278,10 +278,10 @@ public class NewsController {
             for(StoreupEntity s : storeups) {
                 if(typeList.contains(s.getInteltype())) continue;
                 typeList.add(s.getInteltype());
-                newsList.addAll(newsService.selectList(new EntityWrapper<NewsEntity>().eq(inteltypeColumn, s.getInteltype())));
+                newsList.addAll(newsService.list(new QueryWrapper<NewsEntity>().eq(inteltypeColumn, s.getInteltype())));
             }
         }
-        EntityWrapper<NewsEntity> ew = new EntityWrapper<NewsEntity>();
+        QueryWrapper<NewsEntity> ew = new QueryWrapper<NewsEntity>();
         params.put("sort", "id");
         params.put("order", "desc");
         PageUtils page = newsService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, news), params), params));

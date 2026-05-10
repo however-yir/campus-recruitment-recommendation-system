@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ForumtypeEntity;
@@ -70,7 +70,7 @@ public class ForumtypeController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,ForumtypeEntity forumtype,
 		HttpServletRequest request){
-        EntityWrapper<ForumtypeEntity> ew = new EntityWrapper<ForumtypeEntity>();
+        QueryWrapper<ForumtypeEntity> ew = new QueryWrapper<ForumtypeEntity>();
 
 
 
@@ -87,7 +87,7 @@ public class ForumtypeController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,ForumtypeEntity forumtype, 
 		HttpServletRequest request){
-        EntityWrapper<ForumtypeEntity> ew = new EntityWrapper<ForumtypeEntity>();
+        QueryWrapper<ForumtypeEntity> ew = new QueryWrapper<ForumtypeEntity>();
 
 		PageUtils page = forumtypeService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, forumtype), params), params));
 		
@@ -103,7 +103,7 @@ public class ForumtypeController {
      */
     @RequestMapping("/lists")
     public R list( ForumtypeEntity forumtype){
-       	EntityWrapper<ForumtypeEntity> ew = new EntityWrapper<ForumtypeEntity>();
+       	QueryWrapper<ForumtypeEntity> ew = new QueryWrapper<ForumtypeEntity>();
       	ew.allEq(MPUtil.allEQMapPre( forumtype, "forumtype")); 
         return R.ok().put("data", forumtypeService.selectListView(ew));
     }
@@ -113,7 +113,7 @@ public class ForumtypeController {
      */
     @RequestMapping("/query")
     public R query(ForumtypeEntity forumtype){
-        EntityWrapper< ForumtypeEntity> ew = new EntityWrapper< ForumtypeEntity>();
+        QueryWrapper< ForumtypeEntity> ew = new QueryWrapper< ForumtypeEntity>();
  		ew.allEq(MPUtil.allEQMapPre( forumtype, "forumtype")); 
 		ForumtypeView forumtypeView =  forumtypeService.selectView(ew);
 		return R.ok("查询交流论坛类型成功").put("data", forumtypeView);
@@ -124,7 +124,7 @@ public class ForumtypeController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ForumtypeEntity forumtype = forumtypeService.selectById(id);
+        ForumtypeEntity forumtype = forumtypeService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forumtype,deSens);
         return R.ok().put("data", forumtype);
@@ -136,7 +136,7 @@ public class ForumtypeController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ForumtypeEntity forumtype = forumtypeService.selectById(id);
+        ForumtypeEntity forumtype = forumtypeService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forumtype,deSens);
         return R.ok().put("data", forumtype);
@@ -151,7 +151,7 @@ public class ForumtypeController {
     @RequestMapping("/save")
     public R save(@RequestBody ForumtypeEntity forumtype, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forumtype);
-        forumtypeService.insert(forumtype);
+        forumtypeService.save(forumtype);
         return R.ok().put("data",forumtype.getId());
     }
     
@@ -161,7 +161,7 @@ public class ForumtypeController {
     @RequestMapping("/add")
     public R add(@RequestBody ForumtypeEntity forumtype, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forumtype);
-        forumtypeService.insert(forumtype);
+        forumtypeService.save(forumtype);
         return R.ok().put("data",forumtype.getId());
     }
 
@@ -173,7 +173,7 @@ public class ForumtypeController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        ForumtypeEntity forumtype = forumtypeService.selectOne(new EntityWrapper<ForumtypeEntity>().eq("", username));
+        ForumtypeEntity forumtype = forumtypeService.getOne(new QueryWrapper<ForumtypeEntity>().eq("", username));
         return R.ok().put("data", forumtype);
     }
 
@@ -201,7 +201,7 @@ public class ForumtypeController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        forumtypeService.deleteBatchIds(Arrays.asList(ids));
+        forumtypeService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -212,7 +212,7 @@ public class ForumtypeController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,ForumtypeEntity forumtype, HttpServletRequest request,String pre){
-        EntityWrapper<ForumtypeEntity> ew = new EntityWrapper<ForumtypeEntity>();
+        QueryWrapper<ForumtypeEntity> ew = new QueryWrapper<ForumtypeEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

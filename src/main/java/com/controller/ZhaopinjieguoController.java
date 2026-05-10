@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ZhaopinjieguoEntity;
@@ -77,7 +77,7 @@ public class ZhaopinjieguoController {
 		if(tableName.equals("yonghu")) {
 			zhaopinjieguo.setYonghuzhanghao((String)request.getSession().getAttribute("username"));
 		}
-        EntityWrapper<ZhaopinjieguoEntity> ew = new EntityWrapper<ZhaopinjieguoEntity>();
+        QueryWrapper<ZhaopinjieguoEntity> ew = new QueryWrapper<ZhaopinjieguoEntity>();
 
 
 
@@ -94,7 +94,7 @@ public class ZhaopinjieguoController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,ZhaopinjieguoEntity zhaopinjieguo, 
 		HttpServletRequest request){
-        EntityWrapper<ZhaopinjieguoEntity> ew = new EntityWrapper<ZhaopinjieguoEntity>();
+        QueryWrapper<ZhaopinjieguoEntity> ew = new QueryWrapper<ZhaopinjieguoEntity>();
 
 		PageUtils page = zhaopinjieguoService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhaopinjieguo), params), params));
 		
@@ -110,7 +110,7 @@ public class ZhaopinjieguoController {
      */
     @RequestMapping("/lists")
     public R list( ZhaopinjieguoEntity zhaopinjieguo){
-       	EntityWrapper<ZhaopinjieguoEntity> ew = new EntityWrapper<ZhaopinjieguoEntity>();
+       	QueryWrapper<ZhaopinjieguoEntity> ew = new QueryWrapper<ZhaopinjieguoEntity>();
       	ew.allEq(MPUtil.allEQMapPre( zhaopinjieguo, "zhaopinjieguo")); 
         return R.ok().put("data", zhaopinjieguoService.selectListView(ew));
     }
@@ -120,7 +120,7 @@ public class ZhaopinjieguoController {
      */
     @RequestMapping("/query")
     public R query(ZhaopinjieguoEntity zhaopinjieguo){
-        EntityWrapper< ZhaopinjieguoEntity> ew = new EntityWrapper< ZhaopinjieguoEntity>();
+        QueryWrapper< ZhaopinjieguoEntity> ew = new QueryWrapper< ZhaopinjieguoEntity>();
  		ew.allEq(MPUtil.allEQMapPre( zhaopinjieguo, "zhaopinjieguo")); 
 		ZhaopinjieguoView zhaopinjieguoView =  zhaopinjieguoService.selectView(ew);
 		return R.ok("查询招聘结果成功").put("data", zhaopinjieguoView);
@@ -131,7 +131,7 @@ public class ZhaopinjieguoController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ZhaopinjieguoEntity zhaopinjieguo = zhaopinjieguoService.selectById(id);
+        ZhaopinjieguoEntity zhaopinjieguo = zhaopinjieguoService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhaopinjieguo,deSens);
         return R.ok().put("data", zhaopinjieguo);
@@ -143,7 +143,7 @@ public class ZhaopinjieguoController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ZhaopinjieguoEntity zhaopinjieguo = zhaopinjieguoService.selectById(id);
+        ZhaopinjieguoEntity zhaopinjieguo = zhaopinjieguoService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhaopinjieguo,deSens);
         return R.ok().put("data", zhaopinjieguo);
@@ -158,7 +158,7 @@ public class ZhaopinjieguoController {
     @RequestMapping("/save")
     public R save(@RequestBody ZhaopinjieguoEntity zhaopinjieguo, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(zhaopinjieguo);
-        zhaopinjieguoService.insert(zhaopinjieguo);
+        zhaopinjieguoService.save(zhaopinjieguo);
         return R.ok().put("data",zhaopinjieguo.getId());
     }
     
@@ -168,7 +168,7 @@ public class ZhaopinjieguoController {
     @RequestMapping("/add")
     public R add(@RequestBody ZhaopinjieguoEntity zhaopinjieguo, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(zhaopinjieguo);
-        zhaopinjieguoService.insert(zhaopinjieguo);
+        zhaopinjieguoService.save(zhaopinjieguo);
         return R.ok().put("data",zhaopinjieguo.getId());
     }
 
@@ -198,7 +198,7 @@ public class ZhaopinjieguoController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        zhaopinjieguoService.deleteBatchIds(Arrays.asList(ids));
+        zhaopinjieguoService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     

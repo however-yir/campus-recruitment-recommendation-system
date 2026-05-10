@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.NewstypeEntity;
@@ -70,7 +70,7 @@ public class NewstypeController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,NewstypeEntity newstype,
 		HttpServletRequest request){
-        EntityWrapper<NewstypeEntity> ew = new EntityWrapper<NewstypeEntity>();
+        QueryWrapper<NewstypeEntity> ew = new QueryWrapper<NewstypeEntity>();
 
 
 
@@ -87,7 +87,7 @@ public class NewstypeController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,NewstypeEntity newstype, 
 		HttpServletRequest request){
-        EntityWrapper<NewstypeEntity> ew = new EntityWrapper<NewstypeEntity>();
+        QueryWrapper<NewstypeEntity> ew = new QueryWrapper<NewstypeEntity>();
 
 		PageUtils page = newstypeService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, newstype), params), params));
 		
@@ -103,7 +103,7 @@ public class NewstypeController {
      */
     @RequestMapping("/lists")
     public R list( NewstypeEntity newstype){
-       	EntityWrapper<NewstypeEntity> ew = new EntityWrapper<NewstypeEntity>();
+       	QueryWrapper<NewstypeEntity> ew = new QueryWrapper<NewstypeEntity>();
       	ew.allEq(MPUtil.allEQMapPre( newstype, "newstype")); 
         return R.ok().put("data", newstypeService.selectListView(ew));
     }
@@ -113,7 +113,7 @@ public class NewstypeController {
      */
     @RequestMapping("/query")
     public R query(NewstypeEntity newstype){
-        EntityWrapper< NewstypeEntity> ew = new EntityWrapper< NewstypeEntity>();
+        QueryWrapper< NewstypeEntity> ew = new QueryWrapper< NewstypeEntity>();
  		ew.allEq(MPUtil.allEQMapPre( newstype, "newstype")); 
 		NewstypeView newstypeView =  newstypeService.selectView(ew);
 		return R.ok("查询公告信息分类成功").put("data", newstypeView);
@@ -124,7 +124,7 @@ public class NewstypeController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        NewstypeEntity newstype = newstypeService.selectById(id);
+        NewstypeEntity newstype = newstypeService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(newstype,deSens);
         return R.ok().put("data", newstype);
@@ -136,7 +136,7 @@ public class NewstypeController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        NewstypeEntity newstype = newstypeService.selectById(id);
+        NewstypeEntity newstype = newstypeService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(newstype,deSens);
         return R.ok().put("data", newstype);
@@ -151,7 +151,7 @@ public class NewstypeController {
     @RequestMapping("/save")
     public R save(@RequestBody NewstypeEntity newstype, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(newstype);
-        newstypeService.insert(newstype);
+        newstypeService.save(newstype);
         return R.ok().put("data",newstype.getId());
     }
     
@@ -161,7 +161,7 @@ public class NewstypeController {
     @RequestMapping("/add")
     public R add(@RequestBody NewstypeEntity newstype, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(newstype);
-        newstypeService.insert(newstype);
+        newstypeService.save(newstype);
         return R.ok().put("data",newstype.getId());
     }
 
@@ -173,7 +173,7 @@ public class NewstypeController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        NewstypeEntity newstype = newstypeService.selectOne(new EntityWrapper<NewstypeEntity>().eq("", username));
+        NewstypeEntity newstype = newstypeService.getOne(new QueryWrapper<NewstypeEntity>().eq("", username));
         return R.ok().put("data", newstype);
     }
 
@@ -201,7 +201,7 @@ public class NewstypeController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        newstypeService.deleteBatchIds(Arrays.asList(ids));
+        newstypeService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -212,7 +212,7 @@ public class NewstypeController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,NewstypeEntity newstype, HttpServletRequest request,String pre){
-        EntityWrapper<NewstypeEntity> ew = new EntityWrapper<NewstypeEntity>();
+        QueryWrapper<NewstypeEntity> ew = new QueryWrapper<NewstypeEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

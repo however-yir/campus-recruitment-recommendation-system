@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.DiscusszhaopinxinxiEntity;
@@ -70,7 +70,7 @@ public class DiscusszhaopinxinxiController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,DiscusszhaopinxinxiEntity discusszhaopinxinxi,
 		HttpServletRequest request){
-        EntityWrapper<DiscusszhaopinxinxiEntity> ew = new EntityWrapper<DiscusszhaopinxinxiEntity>();
+        QueryWrapper<DiscusszhaopinxinxiEntity> ew = new QueryWrapper<DiscusszhaopinxinxiEntity>();
 
 
 
@@ -87,7 +87,7 @@ public class DiscusszhaopinxinxiController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,DiscusszhaopinxinxiEntity discusszhaopinxinxi, 
 		HttpServletRequest request){
-        EntityWrapper<DiscusszhaopinxinxiEntity> ew = new EntityWrapper<DiscusszhaopinxinxiEntity>();
+        QueryWrapper<DiscusszhaopinxinxiEntity> ew = new QueryWrapper<DiscusszhaopinxinxiEntity>();
 
 		PageUtils page = discusszhaopinxinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, discusszhaopinxinxi), params), params));
 		
@@ -103,7 +103,7 @@ public class DiscusszhaopinxinxiController {
      */
     @RequestMapping("/lists")
     public R list( DiscusszhaopinxinxiEntity discusszhaopinxinxi){
-       	EntityWrapper<DiscusszhaopinxinxiEntity> ew = new EntityWrapper<DiscusszhaopinxinxiEntity>();
+       	QueryWrapper<DiscusszhaopinxinxiEntity> ew = new QueryWrapper<DiscusszhaopinxinxiEntity>();
       	ew.allEq(MPUtil.allEQMapPre( discusszhaopinxinxi, "discusszhaopinxinxi")); 
         return R.ok().put("data", discusszhaopinxinxiService.selectListView(ew));
     }
@@ -113,7 +113,7 @@ public class DiscusszhaopinxinxiController {
      */
     @RequestMapping("/query")
     public R query(DiscusszhaopinxinxiEntity discusszhaopinxinxi){
-        EntityWrapper< DiscusszhaopinxinxiEntity> ew = new EntityWrapper< DiscusszhaopinxinxiEntity>();
+        QueryWrapper< DiscusszhaopinxinxiEntity> ew = new QueryWrapper< DiscusszhaopinxinxiEntity>();
  		ew.allEq(MPUtil.allEQMapPre( discusszhaopinxinxi, "discusszhaopinxinxi")); 
 		DiscusszhaopinxinxiView discusszhaopinxinxiView =  discusszhaopinxinxiService.selectView(ew);
 		return R.ok("查询招聘信息评论表成功").put("data", discusszhaopinxinxiView);
@@ -124,7 +124,7 @@ public class DiscusszhaopinxinxiController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.selectById(id);
+        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(discusszhaopinxinxi,deSens);
         return R.ok().put("data", discusszhaopinxinxi);
@@ -136,7 +136,7 @@ public class DiscusszhaopinxinxiController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.selectById(id);
+        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(discusszhaopinxinxi,deSens);
         return R.ok().put("data", discusszhaopinxinxi);
@@ -151,7 +151,7 @@ public class DiscusszhaopinxinxiController {
     @RequestMapping("/save")
     public R save(@RequestBody DiscusszhaopinxinxiEntity discusszhaopinxinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(discusszhaopinxinxi);
-        discusszhaopinxinxiService.insert(discusszhaopinxinxi);
+        discusszhaopinxinxiService.save(discusszhaopinxinxi);
         return R.ok().put("data",discusszhaopinxinxi.getId());
     }
     
@@ -161,7 +161,7 @@ public class DiscusszhaopinxinxiController {
     @RequestMapping("/add")
     public R add(@RequestBody DiscusszhaopinxinxiEntity discusszhaopinxinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(discusszhaopinxinxi);
-        discusszhaopinxinxiService.insert(discusszhaopinxinxi);
+        discusszhaopinxinxiService.save(discusszhaopinxinxi);
         return R.ok().put("data",discusszhaopinxinxi.getId());
     }
 
@@ -173,7 +173,7 @@ public class DiscusszhaopinxinxiController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.selectOne(new EntityWrapper<DiscusszhaopinxinxiEntity>().eq("", username));
+        DiscusszhaopinxinxiEntity discusszhaopinxinxi = discusszhaopinxinxiService.getOne(new QueryWrapper<DiscusszhaopinxinxiEntity>().eq("", username));
         return R.ok().put("data", discusszhaopinxinxi);
     }
 
@@ -201,7 +201,7 @@ public class DiscusszhaopinxinxiController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        discusszhaopinxinxiService.deleteBatchIds(Arrays.asList(ids));
+        discusszhaopinxinxiService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -212,7 +212,7 @@ public class DiscusszhaopinxinxiController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,DiscusszhaopinxinxiEntity discusszhaopinxinxi, HttpServletRequest request,String pre){
-        EntityWrapper<DiscusszhaopinxinxiEntity> ew = new EntityWrapper<DiscusszhaopinxinxiEntity>();
+        QueryWrapper<DiscusszhaopinxinxiEntity> ew = new QueryWrapper<DiscusszhaopinxinxiEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

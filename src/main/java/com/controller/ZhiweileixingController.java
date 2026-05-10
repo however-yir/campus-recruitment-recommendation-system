@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ZhiweileixingEntity;
@@ -70,7 +70,7 @@ public class ZhiweileixingController {
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,ZhiweileixingEntity zhiweileixing,
 		HttpServletRequest request){
-        EntityWrapper<ZhiweileixingEntity> ew = new EntityWrapper<ZhiweileixingEntity>();
+        QueryWrapper<ZhiweileixingEntity> ew = new QueryWrapper<ZhiweileixingEntity>();
 
 
 
@@ -87,7 +87,7 @@ public class ZhiweileixingController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,ZhiweileixingEntity zhiweileixing, 
 		HttpServletRequest request){
-        EntityWrapper<ZhiweileixingEntity> ew = new EntityWrapper<ZhiweileixingEntity>();
+        QueryWrapper<ZhiweileixingEntity> ew = new QueryWrapper<ZhiweileixingEntity>();
 
 		PageUtils page = zhiweileixingService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhiweileixing), params), params));
 		
@@ -103,7 +103,7 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/lists")
     public R list( ZhiweileixingEntity zhiweileixing){
-       	EntityWrapper<ZhiweileixingEntity> ew = new EntityWrapper<ZhiweileixingEntity>();
+       	QueryWrapper<ZhiweileixingEntity> ew = new QueryWrapper<ZhiweileixingEntity>();
       	ew.allEq(MPUtil.allEQMapPre( zhiweileixing, "zhiweileixing")); 
         return R.ok().put("data", zhiweileixingService.selectListView(ew));
     }
@@ -113,7 +113,7 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/query")
     public R query(ZhiweileixingEntity zhiweileixing){
-        EntityWrapper< ZhiweileixingEntity> ew = new EntityWrapper< ZhiweileixingEntity>();
+        QueryWrapper< ZhiweileixingEntity> ew = new QueryWrapper< ZhiweileixingEntity>();
  		ew.allEq(MPUtil.allEQMapPre( zhiweileixing, "zhiweileixing")); 
 		ZhiweileixingView zhiweileixingView =  zhiweileixingService.selectView(ew);
 		return R.ok("查询职位类型成功").put("data", zhiweileixingView);
@@ -124,7 +124,7 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ZhiweileixingEntity zhiweileixing = zhiweileixingService.selectById(id);
+        ZhiweileixingEntity zhiweileixing = zhiweileixingService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhiweileixing,deSens);
         return R.ok().put("data", zhiweileixing);
@@ -136,7 +136,7 @@ public class ZhiweileixingController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ZhiweileixingEntity zhiweileixing = zhiweileixingService.selectById(id);
+        ZhiweileixingEntity zhiweileixing = zhiweileixingService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhiweileixing,deSens);
         return R.ok().put("data", zhiweileixing);
@@ -150,11 +150,11 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody ZhiweileixingEntity zhiweileixing, HttpServletRequest request){
-        if(zhiweileixingService.selectCount(new EntityWrapper<ZhiweileixingEntity>().eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
+        if(zhiweileixingService.count(new QueryWrapper<ZhiweileixingEntity>().eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
             return R.error("职位类型已存在");
         }
     	//ValidatorUtils.validateEntity(zhiweileixing);
-        zhiweileixingService.insert(zhiweileixing);
+        zhiweileixingService.save(zhiweileixing);
         return R.ok().put("data",zhiweileixing.getId());
     }
     
@@ -163,11 +163,11 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/add")
     public R add(@RequestBody ZhiweileixingEntity zhiweileixing, HttpServletRequest request){
-        if(zhiweileixingService.selectCount(new EntityWrapper<ZhiweileixingEntity>().eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
+        if(zhiweileixingService.count(new QueryWrapper<ZhiweileixingEntity>().eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
             return R.error("职位类型已存在");
         }
     	//ValidatorUtils.validateEntity(zhiweileixing);
-        zhiweileixingService.insert(zhiweileixing);
+        zhiweileixingService.save(zhiweileixing);
         return R.ok().put("data",zhiweileixing.getId());
     }
 
@@ -182,7 +182,7 @@ public class ZhiweileixingController {
     @Transactional
     public R update(@RequestBody ZhiweileixingEntity zhiweileixing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(zhiweileixing);
-        if(zhiweileixingService.selectCount(new EntityWrapper<ZhiweileixingEntity>().ne("id", zhiweileixing.getId()).eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
+        if(zhiweileixingService.count(new QueryWrapper<ZhiweileixingEntity>().ne("id", zhiweileixing.getId()).eq("zhiweileixing", zhiweileixing.getZhiweileixing()))>0) {
             return R.error("职位类型已存在");
         }
         //全部更新
@@ -200,7 +200,7 @@ public class ZhiweileixingController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        zhiweileixingService.deleteBatchIds(Arrays.asList(ids));
+        zhiweileixingService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     

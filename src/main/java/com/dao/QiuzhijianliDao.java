@@ -1,11 +1,12 @@
 package com.dao;
 
 import com.entity.QiuzhijianliEntity;
-import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import java.util.List;
 import java.util.Map;
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.plugins.pagination.Pagination;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.apache.ibatis.annotations.Param;
 import com.entity.vo.QiuzhijianliVO;
@@ -27,7 +28,7 @@ public interface QiuzhijianliDao extends BaseMapper<QiuzhijianliEntity> {
 	
 	List<QiuzhijianliView> selectListView(@Param("ew") Wrapper<QiuzhijianliEntity> wrapper);
 
-	List<QiuzhijianliView> selectListView(Pagination page,@Param("ew") Wrapper<QiuzhijianliEntity> wrapper);
+	List<QiuzhijianliView> selectListView(Page<?> page,@Param("ew") Wrapper<QiuzhijianliEntity> wrapper);
 
 	
 	QiuzhijianliView selectView(@Param("ew") Wrapper<QiuzhijianliEntity> wrapper);

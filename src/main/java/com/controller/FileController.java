@@ -27,7 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.annotation.IgnoreAuth;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.entity.ConfigEntity;
 import com.entity.EIException;
 import com.service.ConfigService;
@@ -74,7 +75,7 @@ public class FileController{
  		 */
 //		FileUtils.copyFile(dest, new File("D:\\springbootq33sd\\src\\main\\resources\\static\\upload"+"/"+fileName)); /**修改了路径以后请将该行最前面的//注释去掉**/
 		if(StringUtils.isNotBlank(type) && type.equals("1")) {
-			ConfigEntity configEntity = configService.selectOne(new EntityWrapper<ConfigEntity>().eq("name", "faceFile"));
+			ConfigEntity configEntity = configService.getOne(new QueryWrapper<ConfigEntity>().eq("name", "faceFile"));
 			if(configEntity==null) {
 				configEntity = new ConfigEntity();
 				configEntity.setName("faceFile");
@@ -82,7 +83,7 @@ public class FileController{
 			} else {
 				configEntity.setValue(fileName);
 			}
-			configService.insertOrUpdate(configEntity);
+			configService.saveOrUpdate(configEntity);
 		}
 		return R.ok().put("file", fileName);
 	}

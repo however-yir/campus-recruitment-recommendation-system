@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.QiuzhixinxiEntity;
@@ -77,7 +77,7 @@ public class QiuzhixinxiController {
 		if(tableName.equals("yonghu")) {
 			qiuzhixinxi.setYonghuzhanghao((String)request.getSession().getAttribute("username"));
 		}
-        EntityWrapper<QiuzhixinxiEntity> ew = new EntityWrapper<QiuzhixinxiEntity>();
+        QueryWrapper<QiuzhixinxiEntity> ew = new QueryWrapper<QiuzhixinxiEntity>();
 
 
 
@@ -94,7 +94,7 @@ public class QiuzhixinxiController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,QiuzhixinxiEntity qiuzhixinxi, 
 		HttpServletRequest request){
-        EntityWrapper<QiuzhixinxiEntity> ew = new EntityWrapper<QiuzhixinxiEntity>();
+        QueryWrapper<QiuzhixinxiEntity> ew = new QueryWrapper<QiuzhixinxiEntity>();
 
 		PageUtils page = qiuzhixinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, qiuzhixinxi), params), params));
 		
@@ -110,7 +110,7 @@ public class QiuzhixinxiController {
      */
     @RequestMapping("/lists")
     public R list( QiuzhixinxiEntity qiuzhixinxi){
-       	EntityWrapper<QiuzhixinxiEntity> ew = new EntityWrapper<QiuzhixinxiEntity>();
+       	QueryWrapper<QiuzhixinxiEntity> ew = new QueryWrapper<QiuzhixinxiEntity>();
       	ew.allEq(MPUtil.allEQMapPre( qiuzhixinxi, "qiuzhixinxi")); 
         return R.ok().put("data", qiuzhixinxiService.selectListView(ew));
     }
@@ -120,7 +120,7 @@ public class QiuzhixinxiController {
      */
     @RequestMapping("/query")
     public R query(QiuzhixinxiEntity qiuzhixinxi){
-        EntityWrapper< QiuzhixinxiEntity> ew = new EntityWrapper< QiuzhixinxiEntity>();
+        QueryWrapper< QiuzhixinxiEntity> ew = new QueryWrapper< QiuzhixinxiEntity>();
  		ew.allEq(MPUtil.allEQMapPre( qiuzhixinxi, "qiuzhixinxi")); 
 		QiuzhixinxiView qiuzhixinxiView =  qiuzhixinxiService.selectView(ew);
 		return R.ok("查询求职信息成功").put("data", qiuzhixinxiView);
@@ -131,7 +131,7 @@ public class QiuzhixinxiController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.selectById(id);
+        QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(qiuzhixinxi,deSens);
         return R.ok().put("data", qiuzhixinxi);
@@ -143,7 +143,7 @@ public class QiuzhixinxiController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.selectById(id);
+        QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(qiuzhixinxi,deSens);
         return R.ok().put("data", qiuzhixinxi);
@@ -158,7 +158,7 @@ public class QiuzhixinxiController {
     @RequestMapping("/save")
     public R save(@RequestBody QiuzhixinxiEntity qiuzhixinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(qiuzhixinxi);
-        qiuzhixinxiService.insert(qiuzhixinxi);
+        qiuzhixinxiService.save(qiuzhixinxi);
         return R.ok().put("data",qiuzhixinxi.getId());
     }
     
@@ -168,7 +168,7 @@ public class QiuzhixinxiController {
     @RequestMapping("/add")
     public R add(@RequestBody QiuzhixinxiEntity qiuzhixinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(qiuzhixinxi);
-        qiuzhixinxiService.insert(qiuzhixinxi);
+        qiuzhixinxiService.save(qiuzhixinxi);
         return R.ok().put("data",qiuzhixinxi.getId());
     }
 
@@ -197,7 +197,7 @@ public class QiuzhixinxiController {
     public R update(@RequestBody Long[] ids, @RequestParam String sfsh, @RequestParam String shhf){
         List<QiuzhixinxiEntity> list = new ArrayList<QiuzhixinxiEntity>();
         for(Long id : ids) {
-            QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.selectById(id);
+            QiuzhixinxiEntity qiuzhixinxi = qiuzhixinxiService.getById(id);
             qiuzhixinxi.setSfsh(sfsh);
             qiuzhixinxi.setShhf(shhf);
             list.add(qiuzhixinxi);
@@ -214,7 +214,7 @@ public class QiuzhixinxiController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        qiuzhixinxiService.deleteBatchIds(Arrays.asList(ids));
+        qiuzhixinxiService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     

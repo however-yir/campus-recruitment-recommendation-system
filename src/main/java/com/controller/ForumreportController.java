@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.ForumreportEntity;
@@ -73,7 +73,7 @@ public class ForumreportController {
         if(!request.getSession().getAttribute("role").toString().equals("管理员")) {
             forumreport.setUserid((Long)request.getSession().getAttribute("userId"));
         }
-        EntityWrapper<ForumreportEntity> ew = new EntityWrapper<ForumreportEntity>();
+        QueryWrapper<ForumreportEntity> ew = new QueryWrapper<ForumreportEntity>();
 
 
 
@@ -90,7 +90,7 @@ public class ForumreportController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,ForumreportEntity forumreport, 
 		HttpServletRequest request){
-        EntityWrapper<ForumreportEntity> ew = new EntityWrapper<ForumreportEntity>();
+        QueryWrapper<ForumreportEntity> ew = new QueryWrapper<ForumreportEntity>();
 
 		PageUtils page = forumreportService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, forumreport), params), params));
 		
@@ -106,7 +106,7 @@ public class ForumreportController {
      */
     @RequestMapping("/lists")
     public R list( ForumreportEntity forumreport){
-       	EntityWrapper<ForumreportEntity> ew = new EntityWrapper<ForumreportEntity>();
+       	QueryWrapper<ForumreportEntity> ew = new QueryWrapper<ForumreportEntity>();
       	ew.allEq(MPUtil.allEQMapPre( forumreport, "forumreport")); 
         return R.ok().put("data", forumreportService.selectListView(ew));
     }
@@ -116,7 +116,7 @@ public class ForumreportController {
      */
     @RequestMapping("/query")
     public R query(ForumreportEntity forumreport){
-        EntityWrapper< ForumreportEntity> ew = new EntityWrapper< ForumreportEntity>();
+        QueryWrapper< ForumreportEntity> ew = new QueryWrapper< ForumreportEntity>();
  		ew.allEq(MPUtil.allEQMapPre( forumreport, "forumreport")); 
 		ForumreportView forumreportView =  forumreportService.selectView(ew);
 		return R.ok("查询交流论坛举报成功").put("data", forumreportView);
@@ -127,7 +127,7 @@ public class ForumreportController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ForumreportEntity forumreport = forumreportService.selectById(id);
+        ForumreportEntity forumreport = forumreportService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forumreport,deSens);
         return R.ok().put("data", forumreport);
@@ -139,7 +139,7 @@ public class ForumreportController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ForumreportEntity forumreport = forumreportService.selectById(id);
+        ForumreportEntity forumreport = forumreportService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(forumreport,deSens);
         return R.ok().put("data", forumreport);
@@ -155,7 +155,7 @@ public class ForumreportController {
     public R save(@RequestBody ForumreportEntity forumreport, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forumreport);
     	forumreport.setUserid((Long)request.getSession().getAttribute("userId"));
-        forumreportService.insert(forumreport);
+        forumreportService.save(forumreport);
         return R.ok().put("data",forumreport.getId());
     }
     
@@ -165,7 +165,7 @@ public class ForumreportController {
     @RequestMapping("/add")
     public R add(@RequestBody ForumreportEntity forumreport, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(forumreport);
-        forumreportService.insert(forumreport);
+        forumreportService.save(forumreport);
         return R.ok().put("data",forumreport.getId());
     }
 
@@ -177,7 +177,7 @@ public class ForumreportController {
     @RequestMapping("/security")
     @IgnoreAuth
     public R security(@RequestParam String username){
-        ForumreportEntity forumreport = forumreportService.selectOne(new EntityWrapper<ForumreportEntity>().eq("", username));
+        ForumreportEntity forumreport = forumreportService.getOne(new QueryWrapper<ForumreportEntity>().eq("", username));
         return R.ok().put("data", forumreport);
     }
 
@@ -205,7 +205,7 @@ public class ForumreportController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        forumreportService.deleteBatchIds(Arrays.asList(ids));
+        forumreportService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -216,7 +216,7 @@ public class ForumreportController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,ForumreportEntity forumreport, HttpServletRequest request,String pre){
-        EntityWrapper<ForumreportEntity> ew = new EntityWrapper<ForumreportEntity>();
+        QueryWrapper<ForumreportEntity> ew = new QueryWrapper<ForumreportEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();

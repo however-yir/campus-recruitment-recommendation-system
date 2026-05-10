@@ -4,10 +4,10 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.List;
 
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.plugins.Page;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.utils.PageUtils;
 import com.utils.Query;
 
@@ -24,9 +24,9 @@ public class ForumtypeServiceImpl extends ServiceImpl<ForumtypeDao, ForumtypeEnt
 	
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
-        Page<ForumtypeEntity> page = this.selectPage(
+        Page<ForumtypeEntity> page = this.page(
                 new Query<ForumtypeEntity>(params).getPage(),
-                new EntityWrapper<ForumtypeEntity>()
+                new QueryWrapper<ForumtypeEntity>()
         );
         return new PageUtils(page);
     }

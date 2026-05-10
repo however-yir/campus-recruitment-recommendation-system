@@ -30,7 +30,7 @@ import com.annotation.IgnoreAuth;
 import com.baidu.aip.face.AipFace;
 import com.baidu.aip.face.MatchRequest;
 import com.baidu.aip.util.Base64Util;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.entity.ConfigEntity;
 import com.service.CommonService;
 import com.service.ConfigService;

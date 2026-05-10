@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.YingyaozhaopinEntity;
@@ -77,7 +77,7 @@ public class YingyaozhaopinController {
 		if(tableName.equals("qiyexinxi")) {
 			yingyaozhaopin.setQiyezhanghao((String)request.getSession().getAttribute("username"));
 		}
-        EntityWrapper<YingyaozhaopinEntity> ew = new EntityWrapper<YingyaozhaopinEntity>();
+        QueryWrapper<YingyaozhaopinEntity> ew = new QueryWrapper<YingyaozhaopinEntity>();
 
 
 
@@ -94,7 +94,7 @@ public class YingyaozhaopinController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,YingyaozhaopinEntity yingyaozhaopin, 
 		HttpServletRequest request){
-        EntityWrapper<YingyaozhaopinEntity> ew = new EntityWrapper<YingyaozhaopinEntity>();
+        QueryWrapper<YingyaozhaopinEntity> ew = new QueryWrapper<YingyaozhaopinEntity>();
 
 		PageUtils page = yingyaozhaopinService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, yingyaozhaopin), params), params));
 		
@@ -110,7 +110,7 @@ public class YingyaozhaopinController {
      */
     @RequestMapping("/lists")
     public R list( YingyaozhaopinEntity yingyaozhaopin){
-       	EntityWrapper<YingyaozhaopinEntity> ew = new EntityWrapper<YingyaozhaopinEntity>();
+       	QueryWrapper<YingyaozhaopinEntity> ew = new QueryWrapper<YingyaozhaopinEntity>();
       	ew.allEq(MPUtil.allEQMapPre( yingyaozhaopin, "yingyaozhaopin")); 
         return R.ok().put("data", yingyaozhaopinService.selectListView(ew));
     }
@@ -120,7 +120,7 @@ public class YingyaozhaopinController {
      */
     @RequestMapping("/query")
     public R query(YingyaozhaopinEntity yingyaozhaopin){
-        EntityWrapper< YingyaozhaopinEntity> ew = new EntityWrapper< YingyaozhaopinEntity>();
+        QueryWrapper< YingyaozhaopinEntity> ew = new QueryWrapper< YingyaozhaopinEntity>();
  		ew.allEq(MPUtil.allEQMapPre( yingyaozhaopin, "yingyaozhaopin")); 
 		YingyaozhaopinView yingyaozhaopinView =  yingyaozhaopinService.selectView(ew);
 		return R.ok("查询应邀招聘成功").put("data", yingyaozhaopinView);
@@ -131,7 +131,7 @@ public class YingyaozhaopinController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        YingyaozhaopinEntity yingyaozhaopin = yingyaozhaopinService.selectById(id);
+        YingyaozhaopinEntity yingyaozhaopin = yingyaozhaopinService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(yingyaozhaopin,deSens);
         return R.ok().put("data", yingyaozhaopin);
@@ -143,7 +143,7 @@ public class YingyaozhaopinController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        YingyaozhaopinEntity yingyaozhaopin = yingyaozhaopinService.selectById(id);
+        YingyaozhaopinEntity yingyaozhaopin = yingyaozhaopinService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(yingyaozhaopin,deSens);
         return R.ok().put("data", yingyaozhaopin);
@@ -158,7 +158,7 @@ public class YingyaozhaopinController {
     @RequestMapping("/save")
     public R save(@RequestBody YingyaozhaopinEntity yingyaozhaopin, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yingyaozhaopin);
-        yingyaozhaopinService.insert(yingyaozhaopin);
+        yingyaozhaopinService.save(yingyaozhaopin);
         return R.ok().put("data",yingyaozhaopin.getId());
     }
     
@@ -168,7 +168,7 @@ public class YingyaozhaopinController {
     @RequestMapping("/add")
     public R add(@RequestBody YingyaozhaopinEntity yingyaozhaopin, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yingyaozhaopin);
-        yingyaozhaopinService.insert(yingyaozhaopin);
+        yingyaozhaopinService.save(yingyaozhaopin);
         return R.ok().put("data",yingyaozhaopin.getId());
     }
 
@@ -198,7 +198,7 @@ public class YingyaozhaopinController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        yingyaozhaopinService.deleteBatchIds(Arrays.asList(ids));
+        yingyaozhaopinService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     

@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 
 import com.entity.QiyexuanjiangEntity;
@@ -78,7 +78,7 @@ public class QiyexuanjiangController {
 		if(tableName.equals("qiyexinxi")) {
 			qiyexuanjiang.setQiyezhanghao((String)request.getSession().getAttribute("username"));
 		}
-        EntityWrapper<QiyexuanjiangEntity> ew = new EntityWrapper<QiyexuanjiangEntity>();
+        QueryWrapper<QiyexuanjiangEntity> ew = new QueryWrapper<QiyexuanjiangEntity>();
 
 
 
@@ -95,7 +95,7 @@ public class QiyexuanjiangController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,QiyexuanjiangEntity qiyexuanjiang, 
 		HttpServletRequest request){
-        EntityWrapper<QiyexuanjiangEntity> ew = new EntityWrapper<QiyexuanjiangEntity>();
+        QueryWrapper<QiyexuanjiangEntity> ew = new QueryWrapper<QiyexuanjiangEntity>();
 
 		PageUtils page = qiyexuanjiangService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, qiyexuanjiang), params), params));
 		
@@ -111,7 +111,7 @@ public class QiyexuanjiangController {
      */
     @RequestMapping("/lists")
     public R list( QiyexuanjiangEntity qiyexuanjiang){
-       	EntityWrapper<QiyexuanjiangEntity> ew = new EntityWrapper<QiyexuanjiangEntity>();
+       	QueryWrapper<QiyexuanjiangEntity> ew = new QueryWrapper<QiyexuanjiangEntity>();
       	ew.allEq(MPUtil.allEQMapPre( qiyexuanjiang, "qiyexuanjiang")); 
         return R.ok().put("data", qiyexuanjiangService.selectListView(ew));
     }
@@ -121,7 +121,7 @@ public class QiyexuanjiangController {
      */
     @RequestMapping("/query")
     public R query(QiyexuanjiangEntity qiyexuanjiang){
-        EntityWrapper< QiyexuanjiangEntity> ew = new EntityWrapper< QiyexuanjiangEntity>();
+        QueryWrapper< QiyexuanjiangEntity> ew = new QueryWrapper< QiyexuanjiangEntity>();
  		ew.allEq(MPUtil.allEQMapPre( qiyexuanjiang, "qiyexuanjiang")); 
 		QiyexuanjiangView qiyexuanjiangView =  qiyexuanjiangService.selectView(ew);
 		return R.ok("查询企业宣讲成功").put("data", qiyexuanjiangView);
@@ -132,7 +132,7 @@ public class QiyexuanjiangController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        QiyexuanjiangEntity qiyexuanjiang = qiyexuanjiangService.selectById(id);
+        QiyexuanjiangEntity qiyexuanjiang = qiyexuanjiangService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(qiyexuanjiang,deSens);
         return R.ok().put("data", qiyexuanjiang);
@@ -144,7 +144,7 @@ public class QiyexuanjiangController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        QiyexuanjiangEntity qiyexuanjiang = qiyexuanjiangService.selectById(id);
+        QiyexuanjiangEntity qiyexuanjiang = qiyexuanjiangService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(qiyexuanjiang,deSens);
         return R.ok().put("data", qiyexuanjiang);
@@ -159,7 +159,7 @@ public class QiyexuanjiangController {
     @RequestMapping("/save")
     public R save(@RequestBody QiyexuanjiangEntity qiyexuanjiang, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(qiyexuanjiang);
-        qiyexuanjiangService.insert(qiyexuanjiang);
+        qiyexuanjiangService.save(qiyexuanjiang);
         return R.ok().put("data",qiyexuanjiang.getId());
     }
     
@@ -169,7 +169,7 @@ public class QiyexuanjiangController {
     @RequestMapping("/add")
     public R add(@RequestBody QiyexuanjiangEntity qiyexuanjiang, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(qiyexuanjiang);
-        qiyexuanjiangService.insert(qiyexuanjiang);
+        qiyexuanjiangService.save(qiyexuanjiang);
         return R.ok().put("data",qiyexuanjiang.getId());
     }
 
@@ -199,7 +199,7 @@ public class QiyexuanjiangController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        qiyexuanjiangService.deleteBatchIds(Arrays.asList(ids));
+        qiyexuanjiangService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     

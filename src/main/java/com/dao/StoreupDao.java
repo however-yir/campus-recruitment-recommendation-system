@@ -1,11 +1,12 @@
 package com.dao;
 
 import com.entity.StoreupEntity;
-import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import java.util.List;
 import java.util.Map;
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.plugins.pagination.Pagination;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.apache.ibatis.annotations.Param;
 import com.entity.vo.StoreupVO;
@@ -27,7 +28,7 @@ public interface StoreupDao extends BaseMapper<StoreupEntity> {
 	
 	List<StoreupView> selectListView(@Param("ew") Wrapper<StoreupEntity> wrapper);
 
-	List<StoreupView> selectListView(Pagination page,@Param("ew") Wrapper<StoreupEntity> wrapper);
+	List<StoreupView> selectListView(Page<?> page,@Param("ew") Wrapper<StoreupEntity> wrapper);
 
 	
 	StoreupView selectView(@Param("ew") Wrapper<StoreupEntity> wrapper);

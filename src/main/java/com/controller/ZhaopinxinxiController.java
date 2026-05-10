@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
 import com.utils.UserBasedCollaborativeFiltering;
 
@@ -81,7 +81,7 @@ public class ZhaopinxinxiController {
 		if(tableName.equals("qiyexinxi")) {
 			zhaopinxinxi.setQiyezhanghao((String)request.getSession().getAttribute("username"));
 		}
-        EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+        QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
 
 
 
@@ -98,7 +98,7 @@ public class ZhaopinxinxiController {
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params,ZhaopinxinxiEntity zhaopinxinxi, 
 		HttpServletRequest request){
-        EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+        QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
 
 		PageUtils page = zhaopinxinxiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhaopinxinxi), params), params));
 		
@@ -114,7 +114,7 @@ public class ZhaopinxinxiController {
      */
     @RequestMapping("/lists")
     public R list( ZhaopinxinxiEntity zhaopinxinxi){
-       	EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+       	QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
       	ew.allEq(MPUtil.allEQMapPre( zhaopinxinxi, "zhaopinxinxi")); 
         return R.ok().put("data", zhaopinxinxiService.selectListView(ew));
     }
@@ -124,7 +124,7 @@ public class ZhaopinxinxiController {
      */
     @RequestMapping("/query")
     public R query(ZhaopinxinxiEntity zhaopinxinxi){
-        EntityWrapper< ZhaopinxinxiEntity> ew = new EntityWrapper< ZhaopinxinxiEntity>();
+        QueryWrapper< ZhaopinxinxiEntity> ew = new QueryWrapper< ZhaopinxinxiEntity>();
  		ew.allEq(MPUtil.allEQMapPre( zhaopinxinxi, "zhaopinxinxi")); 
 		ZhaopinxinxiView zhaopinxinxiView =  zhaopinxinxiService.selectView(ew);
 		return R.ok("查询招聘信息成功").put("data", zhaopinxinxiView);
@@ -135,7 +135,7 @@ public class ZhaopinxinxiController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
-        ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.selectById(id);
+        ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhaopinxinxi,deSens);
         return R.ok().put("data", zhaopinxinxi);
@@ -147,7 +147,7 @@ public class ZhaopinxinxiController {
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
-        ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.selectById(id);
+        ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.getById(id);
 				Map<String, String> deSens = new HashMap<>();
 				DeSensUtil.desensitize(zhaopinxinxi,deSens);
         return R.ok().put("data", zhaopinxinxi);
@@ -162,7 +162,7 @@ public class ZhaopinxinxiController {
     @RequestMapping("/save")
     public R save(@RequestBody ZhaopinxinxiEntity zhaopinxinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(zhaopinxinxi);
-        zhaopinxinxiService.insert(zhaopinxinxi);
+        zhaopinxinxiService.save(zhaopinxinxi);
         return R.ok().put("data",zhaopinxinxi.getId());
     }
     
@@ -172,7 +172,7 @@ public class ZhaopinxinxiController {
     @RequestMapping("/add")
     public R add(@RequestBody ZhaopinxinxiEntity zhaopinxinxi, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(zhaopinxinxi);
-        zhaopinxinxiService.insert(zhaopinxinxi);
+        zhaopinxinxiService.save(zhaopinxinxi);
         return R.ok().put("data",zhaopinxinxi.getId());
     }
 
@@ -201,7 +201,7 @@ public class ZhaopinxinxiController {
     public R update(@RequestBody Long[] ids, @RequestParam String sfsh, @RequestParam String shhf){
         List<ZhaopinxinxiEntity> list = new ArrayList<ZhaopinxinxiEntity>();
         for(Long id : ids) {
-            ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.selectById(id);
+            ZhaopinxinxiEntity zhaopinxinxi = zhaopinxinxiService.getById(id);
             zhaopinxinxi.setSfsh(sfsh);
             zhaopinxinxi.setShhf(shhf);
             list.add(zhaopinxinxi);
@@ -218,7 +218,7 @@ public class ZhaopinxinxiController {
      */
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids){
-        zhaopinxinxiService.deleteBatchIds(Arrays.asList(ids));
+        zhaopinxinxiService.removeByIds(Arrays.asList(ids));
         return R.ok();
     }
     
@@ -229,7 +229,7 @@ public class ZhaopinxinxiController {
 	@IgnoreAuth
     @RequestMapping("/autoSort")
     public R autoSort(@RequestParam Map<String, Object> params,ZhaopinxinxiEntity zhaopinxinxi, HttpServletRequest request,String pre){
-        EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+        QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
         Map<String, Object> newMap = new HashMap<String, Object>();
         Map<String, Object> param = new HashMap<String, Object>();
 		Iterator<Map.Entry<String, Object>> it = param.entrySet().iterator();
@@ -260,7 +260,7 @@ public class ZhaopinxinxiController {
         String userId = request.getSession().getAttribute("userId").toString();
         Integer limit = params.get("limit")==null?10:Integer.parseInt(params.get("limit").toString());
         Integer neighborLimit = params.get("neighborLimit")==null?Math.max(limit * 3, 20):Integer.parseInt(params.get("neighborLimit").toString());
-        List<StoreupEntity> storeups = storeupService.selectList(new EntityWrapper<StoreupEntity>().eq("type", 1).eq("tablename", "zhaopinxinxi"));
+        List<StoreupEntity> storeups = storeupService.list(new QueryWrapper<StoreupEntity>().eq("type", 1).eq("tablename", "zhaopinxinxi"));
         Map<String, Map<String, Double>> ratings = new HashMap<>();
         if(storeups!=null && storeups.size()>0) {
             for(StoreupEntity storeup : storeups) {
@@ -289,23 +289,23 @@ public class ZhaopinxinxiController {
         List<ZhaopinxinxiEntity> pageList = new ArrayList<ZhaopinxinxiEntity>();
         Set<String> excludedIds = new LinkedHashSet<>(recommendations);
         if(recommendations!=null && recommendations.size()>0) {
-            EntityWrapper<ZhaopinxinxiEntity> ew = new EntityWrapper<ZhaopinxinxiEntity>();
+            QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
             ew.in("id", recommendations);
             ew.last("order by FIELD(id, "+String.join(",", recommendations)+")");
-            pageList.addAll(zhaopinxinxiService.selectList(ew));
+            pageList.addAll(zhaopinxinxiService.list(ew));
         }
         if(pageList.size()<limit) {
             int toAddNum = limit-pageList.size();
-            EntityWrapper<ZhaopinxinxiEntity> hotWrapper = new EntityWrapper<ZhaopinxinxiEntity>();
+            QueryWrapper<ZhaopinxinxiEntity> hotWrapper = new QueryWrapper<ZhaopinxinxiEntity>();
             if(!excludedIds.isEmpty()) {
                 hotWrapper.notIn("id", excludedIds);
             }
             hotWrapper.eq("sfsh", "是");
-            hotWrapper.orderBy("storeupnum", false);
-            hotWrapper.orderBy("clicktime", false);
-            hotWrapper.orderBy("id", false);
+            hotWrapper.orderBy(true, false, "storeupnum");
+            hotWrapper.orderBy(true, false, "clicktime");
+            hotWrapper.orderBy(true, false, "id");
             hotWrapper.last("limit "+toAddNum);
-            pageList.addAll(zhaopinxinxiService.selectList(hotWrapper));
+            pageList.addAll(zhaopinxinxiService.list(hotWrapper));
         }
         if(pageList.size()>limit) {
             pageList = pageList.subList(0, limit);

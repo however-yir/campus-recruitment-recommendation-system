@@ -59,12 +59,7 @@
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-boot-starter</artifactId>
-			<version>3.5.16</version>
-		</dependency>
-		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-jsqlparser</artifactId>
-			<version>3.5.16</version>
+			<version>3.5.6</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.google.protobuf</groupId>

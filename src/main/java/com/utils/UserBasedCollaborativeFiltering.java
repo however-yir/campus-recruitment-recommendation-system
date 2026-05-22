@@ -16,7 +16,7 @@ public class UserBasedCollaborativeFiltering {
     private Long[][] sparseMatrix;
 
     public UserBasedCollaborativeFiltering(Map<String, Map<String, Double>> userRatings) {
-        this.userRatings = userRatings;
+        this.userRatings = userRatings == null ? Collections.emptyMap() : userRatings;
         this.itemUsers = new HashMap<>();
         
         this.userIndex = new HashMap<>();//辅助存储每一个用户的用户索引index映射:user->index
@@ -24,8 +24,8 @@ public class UserBasedCollaborativeFiltering {
 
         // 构建物品-用户倒排表
         int keyIndex = 0;
-        for (String user : userRatings.keySet()) {
-            Map<String, Double> ratings = userRatings.get(user);
+        for (String user : this.userRatings.keySet()) {
+            Map<String, Double> ratings = this.userRatings.get(user);
             for (String item : ratings.keySet()) {
                 if (!itemUsers.containsKey(item)) {
                     itemUsers.put(item, new ArrayList<>());
@@ -38,7 +38,7 @@ public class UserBasedCollaborativeFiltering {
             keyIndex++;
         }
         
-        int N = userRatings.size();
+        int N = this.userRatings.size();
         this.sparseMatrix=new Long[N][N];//建立用户稀疏矩阵，用于用户相似度计算【相似度矩阵】
         for(int i=0;i<N;i++){
             for(int j=0;j<N;j++)
@@ -74,6 +74,13 @@ public class UserBasedCollaborativeFiltering {
     public List<String> recommendItems(String targetUser, int neighborCount, int numRecommendations) {
         if (!userRatings.containsKey(targetUser) || numRecommendations <= 0) {
             return Collections.emptyList();
+        }
+        return new ArrayList<String>(recommendItemScores(targetUser, neighborCount, numRecommendations).keySet());
+    }
+
+    public LinkedHashMap<String, Double> recommendItemScores(String targetUser, int neighborCount, int numRecommendations) {
+        if (!userRatings.containsKey(targetUser) || numRecommendations <= 0) {
+            return new LinkedHashMap<>();
         }
         // 计算目标用户与其他用户的相似度
         Map<String, Double> userSimilarities = new HashMap<>();
@@ -112,17 +119,12 @@ public class UserBasedCollaborativeFiltering {
             }
         }
 
-        // 排序推荐物品
-        LinkedHashMap<String, Double> sortedRecommendations = new LinkedHashMap<>(recommendations);
         // 取前N个推荐物品
-        int numItems = Math.min(numRecommendations, sortedRecommendations.size());
-        sortedRecommendations = sortedRecommendations.entrySet()
+        int numItems = Math.min(numRecommendations, recommendations.size());
+        return recommendations.entrySet()
         .stream()
         .sorted((Map.Entry.<String, Double>comparingByValue().reversed())).limit(numItems)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        List<String> result = new ArrayList<String>();
-        result.addAll(sortedRecommendations.keySet());
-        return result;
     }
 
     public RecommendationResult recommendItemsWithHotFallback(

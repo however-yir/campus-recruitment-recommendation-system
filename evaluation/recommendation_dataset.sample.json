@@ -1,12 +1,23 @@
-[
-  {
-    "user_id": "u1",
-    "predicted": ["job-2", "job-3", "job-4"],
-    "ground_truth": ["job-2", "job-5"]
-  },
-  {
-    "user_id": "u2",
-    "predicted": ["job-8", "job-6", "job-1"],
-    "ground_truth": ["job-6", "job-9"]
-  }
-]
+{
+  "catalog_items": ["job-1", "job-2", "job-3", "job-4", "job-5", "job-6", "job-8", "job-9"],
+  "rows": [
+    {
+      "user_id": "u1",
+      "predicted": [
+        {"id": "job-2", "reason": "相似用户推荐、技能匹配"},
+        {"id": "job-3", "reason": "热门兜底"},
+        {"id": "job-4", "reason": "城市匹配、热门兜底"}
+      ],
+      "ground_truth": ["job-2", "job-5"]
+    },
+    {
+      "user_id": "u2",
+      "predicted": [
+        {"id": "job-8", "reason": "相似用户推荐"},
+        {"id": "job-6", "reason": "技能匹配、城市匹配"},
+        {"id": "job-1", "reason": "热门兜底"}
+      ],
+      "ground_truth": ["job-6", "job-9"]
+    }
+  ]
+}

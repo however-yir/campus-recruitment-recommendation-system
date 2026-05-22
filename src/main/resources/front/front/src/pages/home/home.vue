@@ -127,6 +127,7 @@
 						<img :name="item.id" v-if="preHttp(item.zhaopinfengmian)" :src="item.zhaopinfengmian.split(',')[0]" alt="" />
 						<img :name="item.id" v-else :src="baseUrl + (item.zhaopinfengmian?item.zhaopinfengmian.split(',')[0]:'')" alt="" />
 						<div class="name">{{item.qiyemingcheng}}</div>
+						<div class="reason" v-if="item.reason">推荐理由：{{item.reason}}</div>
 					</div>
 				</div>
 			</div>
@@ -1015,6 +1016,15 @@ import Swiper from "swiper";
 							font-size: 20px;
 							line-height: 32px;
 							border-width: 0 0 1px;
+						}
+						.reason {
+							margin: 10px 0 0;
+							border-radius: 4px;
+							padding: 6px 8px;
+							background: #0AB8C112;
+							color: #0A7278;
+							font-size: 12px;
+							line-height: 18px;
 						}
 						.price {
 							padding: 10px 0;

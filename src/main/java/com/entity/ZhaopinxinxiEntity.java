@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -128,8 +129,20 @@ public class ZhaopinxinxiEntity<T> implements Serializable {
 	/**
 	 * 收藏数
 	 */
-					
+
 	private Integer storeupnum;
+
+	/**
+	 * 推荐理由
+	 */
+	@TableField(exist = false)
+	private String reason;
+
+	/**
+	 * 推荐得分拆解
+	 */
+	@TableField(exist = false)
+	private Map<String, Double> scoreBreakdown;
 	
 	
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
@@ -305,6 +318,30 @@ public class ZhaopinxinxiEntity<T> implements Serializable {
 	 */
 	public Integer getStoreupnum() {
 		return storeupnum;
+	}
+	/**
+	 * 设置：推荐理由
+	 */
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+	/**
+	 * 获取：推荐理由
+	 */
+	public String getReason() {
+		return reason;
+	}
+	/**
+	 * 设置：推荐得分拆解
+	 */
+	public void setScoreBreakdown(Map<String, Double> scoreBreakdown) {
+		this.scoreBreakdown = scoreBreakdown;
+	}
+	/**
+	 * 获取：推荐得分拆解
+	 */
+	public Map<String, Double> getScoreBreakdown() {
+		return scoreBreakdown;
 	}
 
 }

@@ -75,6 +75,7 @@
 							<span class="label">收藏量：</span>
 							<span class="text">{{item.storeupnum}}</span>
 						</div>
+						<div class="reason_item" v-if="item.reason">推荐理由：{{item.reason}}</div>
 					</div>
 				</div>
 			</div>
@@ -610,6 +611,17 @@
 							font-size: 14px;
 							line-height: 1.5;
 						}
+					}
+					.reason_item {
+						border-radius: 4px;
+						padding: 8px 10px;
+						margin: 12px 0 0;
+						background: #0AB8C112;
+						color: #0A7278;
+						width: 100%;
+						font-size: 12px;
+						line-height: 18px;
+						order: 9;
 					}
 					.view_item {
 						padding: 10px 0 0;

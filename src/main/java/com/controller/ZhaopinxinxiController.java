@@ -29,8 +29,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.annotation.IgnoreAuth;
+import com.entity.QiuzhijianliEntity;
+import com.entity.QiuzhixinxiEntity;
+import com.entity.QiyexinxiEntity;
+import com.service.QiuzhijianliService;
+import com.service.QiuzhixinxiService;
+import com.service.QiyexinxiService;
+import com.utils.HybridJobRecommender;
 import com.utils.UserBasedCollaborativeFiltering;
 
 import com.entity.ZhaopinxinxiEntity;
@@ -63,8 +69,14 @@ public class ZhaopinxinxiController {
     @Autowired
     private StoreupService storeupService;
 
+    @Autowired
+    private QiyexinxiService qiyexinxiService;
 
+    @Autowired
+    private QiuzhijianliService qiuzhijianliService;
 
+    @Autowired
+    private QiuzhixinxiService qiuzhixinxiService;
 
 
     
@@ -257,7 +269,12 @@ public class ZhaopinxinxiController {
      */
     @RequestMapping("/autoSort2")
     public R autoSort2(@RequestParam Map<String, Object> params,ZhaopinxinxiEntity zhaopinxinxi, HttpServletRequest request){
-        String userId = request.getSession().getAttribute("userId").toString();
+        Object userIdObj = request.getSession().getAttribute("userId");
+        if(userIdObj==null) {
+            return autoSort(params, zhaopinxinxi, request, "");
+        }
+        String userId = userIdObj.toString();
+        String username = request.getSession().getAttribute("username")==null?"":request.getSession().getAttribute("username").toString();
         Integer limit = params.get("limit")==null?10:Integer.parseInt(params.get("limit").toString());
         Integer neighborLimit = params.get("neighborLimit")==null?Math.max(limit * 3, 20):Integer.parseInt(params.get("neighborLimit").toString());
         List<StoreupEntity> storeups = storeupService.list(new QueryWrapper<StoreupEntity>().eq("type", 1).eq("tablename", "zhaopinxinxi"));
@@ -279,41 +296,239 @@ public class ZhaopinxinxiController {
                 }
             }
         }
-        // 创建协同过滤对象
+
         UserBasedCollaborativeFiltering filter = new UserBasedCollaborativeFiltering(ratings);
+        Map<String, Double> collaborativeScores = filter.recommendItemScores(userId, neighborLimit, Math.max(limit * 5, 50));
 
-        // 为指定用户推荐物品
-        String targetUser = userId;
-        List<String> recommendations = filter.recommendItems(targetUser, neighborLimit, limit);
-
-        List<ZhaopinxinxiEntity> pageList = new ArrayList<ZhaopinxinxiEntity>();
-        Set<String> excludedIds = new LinkedHashSet<>(recommendations);
-        if(recommendations!=null && recommendations.size()>0) {
-            QueryWrapper<ZhaopinxinxiEntity> ew = new QueryWrapper<ZhaopinxinxiEntity>();
-            ew.in("id", recommendations);
-            ew.last("order by FIELD(id, "+String.join(",", recommendations)+")");
-            pageList.addAll(zhaopinxinxiService.list(ew));
+        QueryWrapper<ZhaopinxinxiEntity> candidateWrapper = new QueryWrapper<ZhaopinxinxiEntity>();
+        candidateWrapper.eq("sfsh", "是");
+        addLikeIfPresent(candidateWrapper, "qiyemingcheng", zhaopinxinxi.getQiyemingcheng());
+        addLikeIfPresent(candidateWrapper, "zhiweimingcheng", zhaopinxinxi.getZhiweimingcheng());
+        addLikeIfPresent(candidateWrapper, "xinzidaiyu", zhaopinxinxi.getXinzidaiyu());
+        addEqIfPresent(candidateWrapper, "zhiweileixing", zhaopinxinxi.getZhiweileixing());
+        candidateWrapper.orderBy(true, false, "storeupnum");
+        candidateWrapper.orderBy(true, false, "clicktime");
+        candidateWrapper.orderBy(true, false, "id");
+        List<ZhaopinxinxiEntity> candidates = zhaopinxinxiService.list(candidateWrapper);
+        if(candidates==null) {
+            candidates = Collections.emptyList();
         }
-        if(pageList.size()<limit) {
-            int toAddNum = limit-pageList.size();
-            QueryWrapper<ZhaopinxinxiEntity> hotWrapper = new QueryWrapper<ZhaopinxinxiEntity>();
-            if(!excludedIds.isEmpty()) {
-                hotWrapper.notIn("id", excludedIds);
+
+        Map<String, QiyexinxiEntity> companies = loadCompanies(candidates);
+        HybridJobRecommender.StudentProfile studentProfile = buildStudentProfile(userId, username, storeups, candidates);
+        List<HybridJobRecommender.JobFeature> jobFeatures = buildJobFeatures(candidates, companies);
+        Map<String, Double> hotScores = buildHotScores(candidates);
+
+        HybridJobRecommender recommender = new HybridJobRecommender();
+        List<HybridJobRecommender.RecommendationItem> recommendationItems =
+                recommender.recommend(studentProfile, jobFeatures, collaborativeScores, hotScores, limit);
+
+        Map<String, ZhaopinxinxiEntity> candidateMap = new HashMap<>();
+        for(ZhaopinxinxiEntity candidate : candidates) {
+            if(candidate.getId()!=null) {
+                candidateMap.put(candidate.getId().toString(), candidate);
             }
-            hotWrapper.eq("sfsh", "是");
-            hotWrapper.orderBy(true, false, "storeupnum");
-            hotWrapper.orderBy(true, false, "clicktime");
-            hotWrapper.orderBy(true, false, "id");
-            hotWrapper.last("limit "+toAddNum);
-            pageList.addAll(zhaopinxinxiService.list(hotWrapper));
         }
-        if(pageList.size()>limit) {
-            pageList = pageList.subList(0, limit);
+        List<ZhaopinxinxiEntity> pageList = new ArrayList<ZhaopinxinxiEntity>();
+        for(HybridJobRecommender.RecommendationItem item : recommendationItems) {
+            ZhaopinxinxiEntity entity = candidateMap.get(item.getItemId());
+            if(entity!=null) {
+                entity.setReason(item.getReason());
+                entity.setScoreBreakdown(item.getScoreBreakdown());
+                pageList.add(entity);
+            }
         }
         int currPage = params.get("page")==null?1:Integer.parseInt(params.get("page").toString());
         PageUtils page = new PageUtils(pageList, pageList.size(), limit, currPage);
 
         return R.ok().put("data", page);
+    }
+
+    private void addLikeIfPresent(QueryWrapper<ZhaopinxinxiEntity> wrapper, String column, String value) {
+        if(StringUtils.isNotBlank(value)) {
+            wrapper.like(column, value.replace("%", ""));
+        }
+    }
+
+    private void addEqIfPresent(QueryWrapper<ZhaopinxinxiEntity> wrapper, String column, String value) {
+        if(StringUtils.isNotBlank(value)) {
+            wrapper.eq(column, value.replace("%", ""));
+        }
+    }
+
+    private Map<String, QiyexinxiEntity> loadCompanies(List<ZhaopinxinxiEntity> jobs) {
+        Map<String, QiyexinxiEntity> result = new HashMap<>();
+        Set<String> accounts = new LinkedHashSet<>();
+        for(ZhaopinxinxiEntity job : jobs) {
+            if(StringUtils.isNotBlank(job.getQiyezhanghao())) {
+                accounts.add(job.getQiyezhanghao());
+            }
+        }
+        if(accounts.isEmpty()) {
+            return result;
+        }
+        List<QiyexinxiEntity> companies = qiyexinxiService.list(new QueryWrapper<QiyexinxiEntity>().in("qiyezhanghao", accounts));
+        if(companies!=null) {
+            for(QiyexinxiEntity company : companies) {
+                result.put(company.getQiyezhanghao(), company);
+            }
+        }
+        return result;
+    }
+
+    private HybridJobRecommender.StudentProfile buildStudentProfile(
+            String userId,
+            String username,
+            List<StoreupEntity> storeups,
+            List<ZhaopinxinxiEntity> candidates
+    ) {
+        Set<String> favoriteIds = new LinkedHashSet<>();
+        if(storeups!=null) {
+            for(StoreupEntity storeup : storeups) {
+                if(storeup.getUserid()!=null && storeup.getRefid()!=null && userId.equals(storeup.getUserid().toString())) {
+                    favoriteIds.add(storeup.getRefid().toString());
+                }
+            }
+        }
+
+        String resumeText = "";
+        String expectedPosition = "";
+        if(StringUtils.isNotBlank(username)) {
+            List<QiuzhijianliEntity> resumes = qiuzhijianliService.list(
+                    new QueryWrapper<QiuzhijianliEntity>().eq("yonghuzhanghao", username).orderBy(true, false, "addtime")
+            );
+            if(resumes!=null && !resumes.isEmpty()) {
+                QiuzhijianliEntity resume = resumes.get(0);
+                expectedPosition = resume.getQiuzhiyixiang();
+                resumeText = joinText(
+                        resume.getQiuzhiyixiang(),
+                        resume.getJiaoyujingli(),
+                        resume.getPeixunjingli(),
+                        resume.getJinglishijian(),
+                        resume.getYuyannengli(),
+                        resume.getZiwopingjia(),
+                        resume.getHuodezhengshu()
+                );
+            }
+        }
+        if(StringUtils.isBlank(expectedPosition)) {
+            expectedPosition = favoriteCategory(favoriteIds, candidates);
+        }
+
+        Set<String> appliedIds = appliedJobIds(username, candidates);
+        return new HybridJobRecommender.StudentProfile()
+                .setExpectedPosition(expectedPosition)
+                .setSkills(HybridJobRecommender.extractSkills(resumeText))
+                .setCity(HybridJobRecommender.extractCity(resumeText))
+                .setEducation(HybridJobRecommender.extractEducation(resumeText))
+                .setExperience(HybridJobRecommender.extractExperience(resumeText))
+                .setFavoriteJobIds(favoriteIds)
+                .setAppliedJobIds(appliedIds);
+    }
+
+    private Set<String> appliedJobIds(String username, List<ZhaopinxinxiEntity> candidates) {
+        Set<String> appliedIds = new LinkedHashSet<>();
+        if(StringUtils.isBlank(username)) {
+            return appliedIds;
+        }
+        List<QiuzhixinxiEntity> applications = qiuzhixinxiService.list(new QueryWrapper<QiuzhixinxiEntity>().eq("yonghuzhanghao", username));
+        if(applications==null || applications.isEmpty()) {
+            return appliedIds;
+        }
+        Set<String> companyAccounts = new LinkedHashSet<>();
+        Set<String> covers = new LinkedHashSet<>();
+        for(QiuzhixinxiEntity application : applications) {
+            if(StringUtils.isNotBlank(application.getQiyezhanghao())) {
+                companyAccounts.add(application.getQiyezhanghao());
+            }
+            if(StringUtils.isNotBlank(application.getZhaopinfengmian())) {
+                covers.add(application.getZhaopinfengmian());
+            }
+        }
+        for(ZhaopinxinxiEntity job : candidates) {
+            if(job.getId()==null) {
+                continue;
+            }
+            boolean sameCompany = StringUtils.isNotBlank(job.getQiyezhanghao()) && companyAccounts.contains(job.getQiyezhanghao());
+            boolean sameCover = StringUtils.isNotBlank(job.getZhaopinfengmian()) && covers.contains(job.getZhaopinfengmian());
+            if(sameCompany || sameCover) {
+                appliedIds.add(job.getId().toString());
+            }
+        }
+        return appliedIds;
+    }
+
+    private String favoriteCategory(Set<String> favoriteIds, List<ZhaopinxinxiEntity> candidates) {
+        Map<String, Integer> categoryCounts = new HashMap<>();
+        for(ZhaopinxinxiEntity candidate : candidates) {
+            if(candidate.getId()!=null && favoriteIds.contains(candidate.getId().toString()) && StringUtils.isNotBlank(candidate.getZhiweileixing())) {
+                categoryCounts.put(candidate.getZhiweileixing(), categoryCounts.getOrDefault(candidate.getZhiweileixing(), 0) + 1);
+            }
+        }
+        String bestCategory = "";
+        int bestCount = 0;
+        for(Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
+            if(entry.getValue() > bestCount) {
+                bestCategory = entry.getKey();
+                bestCount = entry.getValue();
+            }
+        }
+        return bestCategory;
+    }
+
+    private List<HybridJobRecommender.JobFeature> buildJobFeatures(List<ZhaopinxinxiEntity> jobs, Map<String, QiyexinxiEntity> companies) {
+        List<HybridJobRecommender.JobFeature> features = new ArrayList<>();
+        for(ZhaopinxinxiEntity job : jobs) {
+            if(job.getId()==null) {
+                continue;
+            }
+            QiyexinxiEntity company = companies.get(job.getQiyezhanghao());
+            String companyText = company==null ? "" : joinText(company.getQiyedizhi(), company.getQiyejianjie());
+            String jobText = joinText(
+                    job.getZhiweimingcheng(),
+                    job.getZhiweileixing(),
+                    job.getSuoshuxingye(),
+                    job.getXinzidaiyu(),
+                    companyText
+            );
+            features.add(new HybridJobRecommender.JobFeature(job.getId().toString())
+                    .setTitle(job.getZhiweimingcheng())
+                    .setCategory(job.getZhiweileixing())
+                    .setCity(HybridJobRecommender.extractCity(companyText))
+                    .setSalary(job.getXinzidaiyu())
+                    .setEducation(HybridJobRecommender.extractEducation(jobText))
+                    .setSkills(HybridJobRecommender.extractSkills(jobText))
+                    .setExperience(HybridJobRecommender.extractExperience(jobText))
+                    .setIndustry(job.getSuoshuxingye()));
+        }
+        return features;
+    }
+
+    private Map<String, Double> buildHotScores(List<ZhaopinxinxiEntity> jobs) {
+        Map<String, Double> hotScores = new HashMap<>();
+        for(int i=0; i<jobs.size(); i++) {
+            ZhaopinxinxiEntity job = jobs.get(i);
+            if(job.getId()==null) {
+                continue;
+            }
+            double storeupScore = job.getStoreupnum()==null ? 0.0 : job.getStoreupnum().doubleValue();
+            double rankScore = (jobs.size() - i) / 10000.0;
+            hotScores.put(job.getId().toString(), storeupScore + rankScore);
+        }
+        return hotScores;
+    }
+
+    private String joinText(String... values) {
+        StringBuilder builder = new StringBuilder();
+        for(String value : values) {
+            if(StringUtils.isNotBlank(value)) {
+                if(builder.length()>0) {
+                    builder.append(' ');
+                }
+                builder.append(value);
+            }
+        }
+        return builder.toString();
     }
 
 

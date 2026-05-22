@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class UserBasedCollaborativeFilteringTest {
@@ -39,5 +40,24 @@ class UserBasedCollaborativeFilteringTest {
                 filtering.recommendItemsWithHotFallback("u1", 1, 0, Arrays.asList("job-1"));
         Assertions.assertTrue(result.getItems().isEmpty());
         Assertions.assertTrue(result.getExplanations().isEmpty());
+    }
+
+    @Test
+    void shouldExposeCollaborativeScoresForHybridRanking() {
+        Map<String, Map<String, Double>> userRatings = new HashMap<>();
+        Map<String, Double> targetUser = new HashMap<>();
+        targetUser.put("job-1", 1.0);
+        userRatings.put("u1", targetUser);
+
+        Map<String, Double> similarUser = new HashMap<>();
+        similarUser.put("job-1", 1.0);
+        similarUser.put("job-2", 3.0);
+        userRatings.put("u2", similarUser);
+
+        UserBasedCollaborativeFiltering filtering = new UserBasedCollaborativeFiltering(userRatings);
+        LinkedHashMap<String, Double> scores = filtering.recommendItemScores("u1", 2, 2);
+
+        Assertions.assertTrue(scores.containsKey("job-2"));
+        Assertions.assertTrue(scores.get("job-2") > 0);
     }
 }

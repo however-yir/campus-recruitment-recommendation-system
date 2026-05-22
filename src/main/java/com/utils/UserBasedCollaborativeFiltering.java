@@ -82,6 +82,18 @@ public class UserBasedCollaborativeFiltering {
         if (!userRatings.containsKey(targetUser) || numRecommendations <= 0) {
             return new LinkedHashMap<>();
         }
+        Map<String, Double> recommendations = collaborativeScores(targetUser, neighborCount);
+        int numItems = Math.min(numRecommendations, recommendations.size());
+        return recommendations.entrySet()
+                .stream()
+                .sorted((Map.Entry.<String, Double>comparingByValue().reversed())).limit(numItems)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
+    private Map<String, Double> collaborativeScores(String targetUser, int neighborCount) {
+        if (!userRatings.containsKey(targetUser)) {
+            return Collections.emptyMap();
+        }
         // 计算目标用户与其他用户的相似度
         Map<String, Double> userSimilarities = new HashMap<>();
         for (String user : userRatings.keySet()) {
@@ -118,13 +130,7 @@ public class UserBasedCollaborativeFiltering {
                 }
             }
         }
-
-        // 取前N个推荐物品
-        int numItems = Math.min(numRecommendations, recommendations.size());
-        return recommendations.entrySet()
-        .stream()
-        .sorted((Map.Entry.<String, Double>comparingByValue().reversed())).limit(numItems)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        return recommendations;
     }
 
     public RecommendationResult recommendItemsWithHotFallback(
@@ -164,13 +170,120 @@ public class UserBasedCollaborativeFiltering {
         return new RecommendationResult(finalItems, explanations);
     }
 
+    public RecommendationResult recommendItemsWithHybridFallback(
+            String targetUser,
+            int neighborCount,
+            int numRecommendations,
+            List<String> hotItems,
+            Map<String, Double> contentScores
+    ) {
+        if (numRecommendations <= 0) {
+            return new RecommendationResult(Collections.emptyList(), Collections.emptyMap());
+        }
+
+        Map<String, Double> collaborativeScores = normalizeScores(collaborativeScores(targetUser, neighborCount));
+        Map<String, Double> normalizedContentScores = normalizeScores(contentScores);
+        Map<String, Double> hotScores = hotFallbackScores(hotItems);
+
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+        candidates.addAll(collaborativeScores.keySet());
+        candidates.addAll(normalizedContentScores.keySet());
+        candidates.addAll(hotScores.keySet());
+
+        Map<String, ScoreBreakdown> breakdown = new LinkedHashMap<>();
+        for (String item : candidates) {
+            double collaborative = collaborativeScores.getOrDefault(item, 0.0);
+            double content = normalizedContentScores.getOrDefault(item, 0.0);
+            double hot = hotScores.getOrDefault(item, 0.0);
+            double finalScore = collaborative * 0.60 + content * 0.30 + hot * 0.10;
+            breakdown.put(
+                    item,
+                    new ScoreBreakdown(
+                            collaborative,
+                            content,
+                            hot,
+                            finalScore,
+                            explainHybrid(collaborative, content, hot)
+                    )
+            );
+        }
+
+        List<String> finalItems = breakdown.entrySet()
+                .stream()
+                .sorted((a, b) -> {
+                    int scoreCompare = Double.compare(b.getValue().getFinalScore(), a.getValue().getFinalScore());
+                    if (scoreCompare != 0) {
+                        return scoreCompare;
+                    }
+                    return a.getKey().compareTo(b.getKey());
+                })
+                .limit(numRecommendations)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        Map<String, String> explanations = new LinkedHashMap<>();
+        Map<String, ScoreBreakdown> selectedBreakdown = new LinkedHashMap<>();
+        for (String item : finalItems) {
+            ScoreBreakdown itemBreakdown = breakdown.get(item);
+            explanations.put(item, itemBreakdown.getExplanation());
+            selectedBreakdown.put(item, itemBreakdown);
+        }
+
+        return new RecommendationResult(finalItems, explanations, selectedBreakdown);
+    }
+
+    private Map<String, Double> normalizeScores(Map<String, Double> scores) {
+        if (scores == null || scores.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        double max = scores.values().stream().filter(Objects::nonNull).mapToDouble(Double::doubleValue).max().orElse(0.0);
+        if (max <= 0) {
+            return Collections.emptyMap();
+        }
+        Map<String, Double> normalized = new LinkedHashMap<>();
+        for (Map.Entry<String, Double> entry : scores.entrySet()) {
+            if (entry.getValue() != null && entry.getValue() > 0) {
+                normalized.put(entry.getKey(), entry.getValue() / max);
+            }
+        }
+        return normalized;
+    }
+
+    private Map<String, Double> hotFallbackScores(List<String> hotItems) {
+        if (hotItems == null || hotItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, Double> scores = new LinkedHashMap<>();
+        int size = hotItems.size();
+        for (int i = 0; i < hotItems.size(); i++) {
+            scores.put(hotItems.get(i), (double) (size - i) / size);
+        }
+        return scores;
+    }
+
+    private String explainHybrid(double collaborative, double content, double hot) {
+        if (collaborative >= content && collaborative >= hot && collaborative > 0) {
+            return "由相似用户行为推荐";
+        }
+        if (content >= collaborative && content >= hot && content > 0) {
+            return "由岗位内容与用户画像匹配推荐";
+        }
+        return "热门岗位兜底推荐";
+    }
+
     public static class RecommendationResult {
         private final List<String> items;
         private final Map<String, String> explanations;
+        private final Map<String, ScoreBreakdown> scoreBreakdown;
 
         public RecommendationResult(List<String> items, Map<String, String> explanations) {
+            this(items, explanations, Collections.emptyMap());
+        }
+
+        public RecommendationResult(List<String> items, Map<String, String> explanations, Map<String, ScoreBreakdown> scoreBreakdown) {
             this.items = items;
             this.explanations = explanations;
+            this.scoreBreakdown = scoreBreakdown;
         }
 
         public List<String> getItems() {
@@ -179,6 +292,46 @@ public class UserBasedCollaborativeFiltering {
 
         public Map<String, String> getExplanations() {
             return explanations;
+        }
+
+        public Map<String, ScoreBreakdown> getScoreBreakdown() {
+            return scoreBreakdown;
+        }
+    }
+
+    public static class ScoreBreakdown {
+        private final double collaborativeScore;
+        private final double contentScore;
+        private final double hotScore;
+        private final double finalScore;
+        private final String explanation;
+
+        public ScoreBreakdown(double collaborativeScore, double contentScore, double hotScore, double finalScore, String explanation) {
+            this.collaborativeScore = collaborativeScore;
+            this.contentScore = contentScore;
+            this.hotScore = hotScore;
+            this.finalScore = finalScore;
+            this.explanation = explanation;
+        }
+
+        public double getCollaborativeScore() {
+            return collaborativeScore;
+        }
+
+        public double getContentScore() {
+            return contentScore;
+        }
+
+        public double getHotScore() {
+            return hotScore;
+        }
+
+        public double getFinalScore() {
+            return finalScore;
+        }
+
+        public String getExplanation() {
+            return explanation;
         }
     }
     

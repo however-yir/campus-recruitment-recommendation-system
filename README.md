@@ -697,4 +697,4 @@ MIT
 - CI 配置：[.github/workflows/ci.yml](.github/workflows/ci.yml)
 - 评估脚本：[scripts/evaluation/recommendation_metrics.py](scripts/evaluation/recommendation_metrics.py)
 
-本轮已落地：混合推荐、推荐解释、得分拆解、评估指标、配置外置化与 CI 基线。
+本轮已落地：推荐兜底与解释能力、协同过滤 + 岗位内容 + 热门兜底的混合排序、score breakdown、配置外置化、评估脚本骨架与 CI 基线。
